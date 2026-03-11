@@ -1,0 +1,30 @@
+﻿services:
+  test:
+    build: .
+    command: python -m pytest tests/ -v --cov=scripts --cov-report=term-missing --cov-fail-under=90
+    volumes:
+      - .:/app
+    working_dir: /app
+
+  build:
+    build: .
+    command: >
+      sh -c "python -m scripts.build_directory && python -m scripts.generate_sitemap"
+    volumes:
+      - .:/app
+      - ./dist:/app/dist
+    working_dir: /app
+
+  serve:
+    build: .
+    command: python -m http.server 8000 --directory dist
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./dist:/app/dist
+    working_dir: /app
+    depends_on:
+      build:
+        condition: service_completed_successfully
+
+

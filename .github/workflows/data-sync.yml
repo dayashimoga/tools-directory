@@ -1,0 +1,49 @@
+﻿name: Data Sync
+# Fetches fresh Web Setup Tools data from public sources weekly.
+# Commits changes to data/database.json and pushes to main,
+# which triggers a Cloudflare Pages rebuild automatically.
+
+on:
+  schedule:
+    # Run every Sunday at 3:00 AM UTC (low-traffic time)
+    - cron: '0 3 * * 0'
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch fresh data
+        run: python -m scripts.fetch_data
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet data/database.json || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/database.json
+          git commit -m "chore: sync opensource data [automated]"
+          git push
+
+
+
+

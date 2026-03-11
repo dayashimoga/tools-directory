@@ -1,0 +1,45 @@
+﻿name: CI Tests
+# Runs the full test suite on every push and pull request.
+# Fails if test coverage drops below 90%.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests with coverage
+        run: |
+          python -m pytest tests/ -v \
+            --cov=scripts \
+            --cov-report=term-missing \
+            --cov-fail-under=90
+
+      - name: Build site (smoke test)
+        run: |
+          python -m scripts.build_directory
+          python -m scripts.generate_sitemap
+          echo "âœ… Build completed successfully"
+          ls -la dist/
+          echo "Total HTML pages:"
+          find dist/ -name "*.html" | wc -l
+
+
+
+
+

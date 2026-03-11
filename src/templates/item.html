@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "{{ item.title }}",
+    "description": "{{ item.description }}",
+    "url": "{{ item.url }}",
+    "applicationCategory": "{{ item.category }}",
+    "operatingSystem": "Web",
+    "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+    }
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "{{ site_url }}"},
+        {"@type": "ListItem", "position": 2, "name": "{{ item.category }}", "item": "{{ site_url }}/category/{{ item.category | slugify }}.html"},
+        {"@type": "ListItem", "position": 3, "name": "{{ item.title }}"}
+    ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb">
+        <ol>
+            <li><a href="/">Home</a></li>
+            <li><a href="/category/{{ item.category | slugify }}.html">{{ item.category }}</a></li>
+            <li aria-current="page">{{ item.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="item-detail-layout">
+        <!-- Main Content -->
+        <article class="item-detail" id="item-detail">
+            <header class="item-detail-header">
+                <div class="item-title-row">
+                    <h1 class="item-detail-title" id="item-title">{{ item.title }}</h1>
+                    <span class="item-category-badge large">{{ item.category }}</span>
+                </div>
+                <p class="item-detail-desc" id="item-description">{{ item.description }}</p>
+            </header>
+
+            <!-- Properties -->
+            <div class="item-properties" id="item-properties">
+                <div class="property-card">
+                    <span class="property-label">Authentication</span>
+                    <span
+                        class="property-value {% if item.auth == 'None' %}value-good{% else %}value-neutral{% endif %}">
+                        {{ '🔓 None Required' if item.auth == 'None' else '🔐 ' + item.auth }}
+                    </span>
+                </div>
+                <div class="property-card">
+                    <span class="property-label">HTTPS</span>
+                    <span class="property-value {% if item.https %}value-good{% else %}value-warn{% endif %}">
+                        {{ '✅ Supported' if item.https else '⚠️ Not Available' }}
+                    </span>
+                </div>
+                <div class="property-card">
+                    <span class="property-label">CORS</span>
+                    <span
+                        class="property-value {% if item.cors == 'yes' %}value-good{% elif item.cors == 'no' %}value-warn{% else %}value-neutral{% endif %}">
+                        {% if item.cors == 'yes' %}✅ Enabled
+                        {% elif item.cors == 'no' %}❌ Disabled
+                        {% else %}❓ Unknown{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- CTA Button -->
+            <div class="item-actions" id="item-actions">
+                <a href="{{ item.url }}" class="btn btn-primary btn-lg" target="_blank" rel="noopener nofollow"
+                    id="visit-api-btn">
+                    🌐 Visit API Documentation →
+                </a>
+            </div>
+
+            <!-- Ad Unit -->
+            {% if enable_adsense and adsense_publisher_id != 'ca-pub-XXXXXXXXXX' %}
+            <div class="ad-unit" id="ad-below-content">
+                <ins class="adsbygoogle" style="display:block" data-ad-client="{{ adsense_publisher_id }}"
+                    data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
+                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            </div>
+            {% elif enable_adsense %}
+            <div class="ad-placeholder" id="ad-below-content">
+                <span class="ad-placeholder-text">📢 Ad Space — <a href="/docs/SETUP_GUIDE.html">Configure AdSense</a>
+                    to display ads here</span>
+            </div>
+            {% endif %}
+
+            <!-- Related APIs -->
+            {% if related_items %}
+            <section class="related-section" id="related-apis">
+                <h2 class="section-title">Related {{ item.category }} APIs</h2>
+                <div class="items-grid compact">
+                    {% for rel in related_items %}
+                    <a href="/item/{{ rel.slug }}.html" class="item-card" id="related-{{ rel.slug }}">
+                        <div class="item-card-header">
+                            <h3 class="item-title">{{ rel.title }}</h3>
+                        </div>
+                        <p class="item-desc">{{ rel.description | truncate_text }}</p>
+                        <div class="item-meta">
+                            <span
+                                class="meta-badge {% if rel.auth == 'None' %}badge-free{% else %}badge-auth{% endif %}">
+                                {{ '🔓 Free' if rel.auth == 'None' else '🔐 ' + rel.auth }}
+                            </span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+        </article>
+
+        <!-- Sidebar -->
+        <aside class="item-sidebar" id="item-sidebar">
+            <!-- Sidebar Ad -->
+            {% if enable_adsense and adsense_publisher_id != 'ca-pub-XXXXXXXXXX' %}
+            <div class="ad-unit sidebar-ad">
+                <ins class="adsbygoogle" style="display:block" data-ad-client="{{ adsense_publisher_id }}"
+                    data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
+                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            </div>
+            {% elif enable_adsense %}
+            <div class="ad-placeholder sidebar-ad">
+                <span class="ad-placeholder-text">📢 Sidebar Ad Space</span>
+            </div>
+            {% endif %}
+
+            <!-- Amazon Affiliate Books -->
+            {% if enable_amazon and recommended_books %}
+            <div class="sidebar-card" id="sidebar-books">
+                <h4>📚 Recommended Books</h4>
+                <p class="sidebar-hint">Level up your {{ item.category }} skills</p>
+                <ul class="book-list">
+                    {% for book in recommended_books %}
+                    <li class="book-item">
+                        <a href="{{ book.url }}" target="_blank" rel="noopener sponsored" class="book-link"
+                            id="book-{{ loop.index }}">
+                            <span class="book-title">{{ book.title }}</span>
+                            <span class="book-author">by {{ book.author }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <p class="affiliate-disclosure">As an Amazon Associate we earn from qualifying purchases.</p>
+            </div>
+            {% endif %}
+
+            <!-- Info Card -->
+            <div class="sidebar-card" id="sidebar-info">
+                <h4>About This Directory</h4>
+                <p>{{ site_description }}</p>
+                <a href="/" class="btn btn-secondary btn-sm">Browse All APIs</a>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+﻿name: Social Media Bot
+# Posts a random Web Setup Tools Alternative from the directory to Mastodon daily.
+# Does NOT trigger a Cloudflare Pages build (no push to repo).
+
+on:
+  schedule:
+    # DISABLED DUE TO SPAM BAN - Run daily at 12:00 PM UTC
+    # - cron: '0 12 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Post to social media
+        env:
+          MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
+          MASTODON_INSTANCE_URL: ${{ secrets.MASTODON_INSTANCE_URL }}
+          SITE_URL: ${{ vars.SITE_URL || 'https://tools.quickutils.top' }}
+        run: python -m scripts.post_social
+
+
+
+

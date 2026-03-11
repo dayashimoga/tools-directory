@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <meta name="description" content="{{ page_description }}">
+    <link rel="canonical" href="{{ canonical_url }}">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    <link rel="preload" href="/css/styles.css" as="style">
+
+    <!-- Deployment Trigger V2 -->
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="{{ page_title }}">
+    <meta property="og:description" content="{{ page_description }}">
+    <meta property="og:url" content="{{ page_url }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ site_name }}">
+    <meta property="og:image" content="{{ site_url }}/images/pinterest-cover.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ page_title }}">
+    <meta name="twitter:description" content="{{ page_description }}">
+    <meta name="twitter:image" content="{{ site_url }}/images/og-image.png">
+
+    {% if enable_pinterest %}
+    <!-- Pinterest Domain Verification -->
+    <meta name="p:domain_verify" content="c816c2b41079835efd234cb5afef59bf">
+    {% endif %}
+
+    <link rel="alternate" type="application/rss+xml" title="{{ site_name }} RSS Feed" href="{{ site_url }}/feed.xml">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/styles.css">
+
+    {% if ga_measurement_id and ga_measurement_id != 'G-XXXXXXXXXX' %}
+    <!-- Google Analytics (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_measurement_id }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', '{{ ga_measurement_id }}');
+    </script>
+    {% endif %}
+
+    {% if enable_adsense and adsense_publisher_id and adsense_publisher_id != 'ca-pub-XXXXXXXXXX' %}
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ adsense_publisher_id }}"
+        crossorigin="anonymous"></script>
+    {% endif %}
+
+    {% block head_extra %}{% endblock %}
+</head>
+
+<body>
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Header -->
+    <header class="site-header" id="site-header">
+        <div class="container header-inner">
+            <a href="/" class="logo" id="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">{{ site_name }}</span>
+            </a>
+
+            <nav class="main-nav" id="main-nav" aria-label="Main navigation">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/#categories" class="nav-link">Categories</a>
+                <a href="https://quickutils.top" class="nav-link" target="_blank" rel="noopener">QuickUtils</a>
+                <a href="https://yourname.gumroad.com/l/submit" class="nav-link nav-cta" id="submit-tool-link">
+                    Submit a Tool
+                </a>
+            </nav>
+
+            <div class="header-actions">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark/light mode" title="Toggle theme">
+                    <span class="theme-icon-dark">🌙</span>
+                    <span class="theme-icon-light">☀️</span>
+                </button>
+
+                <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">
+                    <span class="hamburger"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer" id="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="logo">
+                        <span class="logo-icon">⚡</span>
+                        <span class="logo-text">{{ site_name }}</span>
+                    </a>
+                    <p class="footer-desc">{{ site_description }}</p>
+                </div>
+
+                <div class="footer-links" style="grid-column: span 1;">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/#categories">All Categories</a></li>
+                        <li><a href="/sitemap.xml">Sitemap</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links" style="grid-column: span 1;">
+                    <h4>Legal & Info</h4>
+                    <ul>
+                        <li><a href="https://quickutils.top/privacy.html" target="_blank" rel="noopener">Privacy
+                                Policy</a></li>
+                        <li><a href="https://quickutils.top/terms.html" target="_blank" rel="noopener">Terms of Use</a>
+                        </li>
+                        <li><a href="https://quickutils.top/about.html" target="_blank" rel="noopener">Contact Us</a>
+                        </li>
+                    </ul>
+                </div>
+
+
+                <div class="footer-links" id="network-footer">
+                    <h4>QuickUtils Network</h4>
+                    <ul>
+                        <li><a href="https://quickutils.top" target="_blank" rel="noopener">Public APIs</a></li>
+                        <li><a href="https://tools.quickutils.top" target="_blank" rel="noopener">Web Tools</a></li>
+                        <li><a href="https://datasets.quickutils.top" target="_blank" rel="noopener">Free Datasets</a>
+                        </li>
+                        <li><a href="https://opensource.quickutils.top" target="_blank" rel="noopener">Open Source</a>
+                        </li>
+                        <li><a href="https://prompts.quickutils.top" target="_blank" rel="noopener">AI Prompts</a></li>
+                        <li><a href="https://cheatsheets.quickutils.top" target="_blank" rel="noopener">Cheatsheets</a>
+                        </li>
+                        <li><a href="https://boilerplates.quickutils.top" target="_blank"
+                                rel="noopener">Boilerplates</a></li>
+                        <li><a href="https://jobs.quickutils.top" target="_blank" rel="noopener">Tech Jobs</a></li>
+                        <li><a href="https://apistatus.quickutils.top" target="_blank" rel="noopener">API Status</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://quickutils.top" target="_blank" rel="noopener">QuickUtils Home</a></li>
+                        <li><a href="https://yourname.gumroad.com/l/submit" target="_blank" rel="noopener">Submit a
+                                Tool</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- World Clock -->
+            <div class="world-clock" id="world-clock">
+                <h4 class="clock-title">🌍 World Clock</h4>
+                <div class="clock-grid">
+                    <div class="clock-item"><span class="clock-city">New York</span><span class="clock-time"
+                            data-tz="America/New_York">--:--</span></div>
+                    <div class="clock-item"><span class="clock-city">London</span><span class="clock-time"
+                            data-tz="Europe/London">--:--</span></div>
+                    <div class="clock-item"><span class="clock-city">Dubai</span><span class="clock-time"
+                            data-tz="Asia/Dubai">--:--</span></div>
+                    <div class="clock-item"><span class="clock-city">Mumbai</span><span class="clock-time"
+                            data-tz="Asia/Kolkata">--:--</span></div>
+                    <div class="clock-item"><span class="clock-city">Singapore</span><span class="clock-time"
+                            data-tz="Asia/Singapore">--:--</span></div>
+                    <div class="clock-item"><span class="clock-city">Tokyo</span><span class="clock-time"
+                            data-tz="Asia/Tokyo">--:--</span></div>
+                    <div class="clock-item"><span class="clock-city">Sydney</span><span class="clock-time"
+                            data-tz="Australia/Sydney">--:--</span></div>
+                    <div class="clock-item"><span class="clock-city">São Paulo</span><span class="clock-time"
+                            data-tz="America/Sao_Paulo">--:--</span></div>
+                    <div class="clock-item"><span class="clock-city">Los Angeles</span><span class="clock-time"
+                            data-tz="America/Los_Angeles">--:--</span></div>
+                    <div class="clock-item"><span class="clock-city">Berlin</span><span class="clock-time"
+                            data-tz="Europe/Berlin">--:--</span></div>
+                </div>
+                <!-- Time Converter -->
+                <div class="time-converter" id="time-converter">
+                    <label class="converter-label">🔄 Convert any time between timezones</label>
+                    <div class="converter-inputs">
+                        <div class="converter-input-group">
+                            <label class="converter-sublabel" for="converter-datetime">Date &amp; Time</label>
+                            <input type="datetime-local" id="converter-datetime" class="converter-input">
+                        </div>
+                        <div class="converter-input-group">
+                            <label class="converter-sublabel" for="converter-from-tz">From</label>
+                            <select id="converter-from-tz" class="converter-select">
+                                <option value="LOCAL" selected>My Local Time</option>
+                                <option value="America/New_York">New York (EST)</option>
+                                <option value="America/Los_Angeles">Los Angeles (PST)</option>
+                                <option value="America/Chicago">Chicago (CST)</option>
+                                <option value="America/Sao_Paulo">São Paulo (BRT)</option>
+                                <option value="Europe/London">London (GMT)</option>
+                                <option value="Europe/Berlin">Berlin (CET)</option>
+                                <option value="Europe/Paris">Paris (CET)</option>
+                                <option value="Asia/Dubai">Dubai (GST)</option>
+                                <option value="Asia/Kolkata">Mumbai (IST)</option>
+                                <option value="Asia/Singapore">Singapore (SGT)</option>
+                                <option value="Asia/Shanghai">Shanghai (CST)</option>
+                                <option value="Asia/Tokyo">Tokyo (JST)</option>
+                                <option value="Australia/Sydney">Sydney (AEST)</option>
+                                <option value="Pacific/Auckland">Auckland (NZST)</option>
+                            </select>
+                        </div>
+                        <span class="converter-arrow-mid">→</span>
+                        <div class="converter-input-group">
+                            <label class="converter-sublabel" for="converter-to-tz">To</label>
+                            <select id="converter-to-tz" class="converter-select">
+                                <option value="America/New_York">New York (EST)</option>
+                                <option value="America/Los_Angeles">Los Angeles (PST)</option>
+                                <option value="America/Chicago">Chicago (CST)</option>
+                                <option value="America/Sao_Paulo">São Paulo (BRT)</option>
+                                <option value="Europe/London">London (GMT)</option>
+                                <option value="Europe/Berlin">Berlin (CET)</option>
+                                <option value="Europe/Paris">Paris (CET)</option>
+                                <option value="Asia/Dubai">Dubai (GST)</option>
+                                <option value="Asia/Kolkata" selected>Mumbai (IST)</option>
+                                <option value="Asia/Singapore">Singapore (SGT)</option>
+                                <option value="Asia/Shanghai">Shanghai (CST)</option>
+                                <option value="Asia/Tokyo">Tokyo (JST)</option>
+                                <option value="Australia/Sydney">Sydney (AEST)</option>
+                                <option value="Pacific/Auckland">Auckland (NZST)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="converter-result" id="converter-result">
+                        <span class="converter-from-display" id="converter-from-display">--:--</span>
+                        <span class="converter-arrow">→</span>
+                        <span class="converter-to-display" id="converter-to-display">--:--</span>
+                    </div>
+                    <button class="converter-now-btn" id="converter-now-btn" type="button">⏱ Use Current Time</button>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; {{ current_year }} {{ site_name }}. Built with ❤️ and automation.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    {% block scripts_extra %}{% endblock %}
+</body>
+
+</html>

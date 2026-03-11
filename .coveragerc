@@ -1,0 +1,10 @@
+[run]
+source = scripts
+omit =
+    scripts/fetch_data.py
+    scripts/post_social.py
+    scripts/post_pinterest.py
+    scripts/generate_pins.py
+    scripts/indexnow_submit.py
+    scripts/check_links.py
+    scripts/generate_sitemap.py
