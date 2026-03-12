@@ -208,13 +208,9 @@ def copy_static_assets():
     """Copy static assets (CSS, JS, images, ads.txt, robots.txt) to dist/."""
     asset_dirs = ["css", "js", "images"]
 
-    # Ensure we use absolute paths resolved relative to the actual project root where the script runs
-    absolute_src = Path(SRC_DIR).resolve()
-    absolute_dist = Path(DIST_DIR).resolve()
-
     for asset_dir in asset_dirs:
-        src = absolute_src / asset_dir
-        dst = absolute_dist / asset_dir
+        src = SRC_DIR / asset_dir
+        dst = DIST_DIR / asset_dir
         if src.exists():
             if dst.exists():
                 shutil.rmtree(dst)
@@ -222,9 +218,9 @@ def copy_static_assets():
 
     # Copy root-level files
     for filename in ["ads.txt", "robots.txt", "_headers", "_redirects"]:
-        src_file = absolute_src / filename
+        src_file = SRC_DIR / filename
         if src_file.exists():
-            shutil.copy2(src_file, absolute_dist / filename)
+            shutil.copy2(src_file, DIST_DIR / filename)
 
 
 
