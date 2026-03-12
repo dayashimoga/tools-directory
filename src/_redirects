@@ -1,4 +1,2 @@
 # Standard Directory Redirects
-/item/* /item/:splat 200
-/category/* /category/:splat 200
 /api/* /404.html 302
