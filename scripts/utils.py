@@ -33,16 +33,30 @@ if CONFIG_PATH.exists():
     except Exception:
         pass
 
-def get_config(key, default):
-    val = os.environ.get(key, _CONFIG.get(key, default))
-    # Handle boolean strings from environment
-    if isinstance(val, str) and val.lower() in ["true", "yes", "1"]:
-        return True
-    if isinstance(val, str) and val.lower() in ["false", "no", "0"]:
-        return False
-    return val
+# Project Identification
+PROJECT_TYPE = str(os.environ.get("PROJECT_TYPE", _CONFIG.get("PROJECT_TYPE", "master")) or "master")
 
-# (Constants moved below)
+def get_config(key, default):
+    # 1. Check environment variable
+    val = os.environ.get(key)
+    
+    # 2. Check project-specific config overrides
+    if val is None:
+        project_overrides = _CONFIG.get("projects", {}).get(PROJECT_TYPE, {})
+        if key in project_overrides:
+            val = project_overrides[key]
+            
+    # 3. Fallback to root level config json and finally default
+    if val is None:
+        val = _CONFIG.get(key, default)
+        
+    # Handle boolean strings from environment or config
+    if isinstance(val, str):
+        if val.lower() in ["true", "yes", "1"]:
+            return True
+        if val.lower() in ["false", "no", "0"]:
+            return False
+    return val
 
 # Global Configuration Constants
 GH_USERNAME = get_config("GH_USERNAME", "dayashimoga")
@@ -54,9 +68,6 @@ AMAZON_AFFILIATE_TAG = get_config("AMAZON_AFFILIATE_TAG", "quickutils-20")
 ENABLE_ADSENSE = get_config("ENABLE_ADSENSE", True)
 ENABLE_AMAZON = get_config("ENABLE_AMAZON", True)
 ENABLE_PINTEREST = get_config("ENABLE_PINTEREST", True)
-
-# Project Identification
-PROJECT_TYPE = str(get_config("PROJECT_TYPE", "master") or "master")
 
 # Site Identity
 if PROJECT_TYPE == "master" or PROJECT_TYPE == "directory":
