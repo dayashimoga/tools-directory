@@ -35,7 +35,10 @@ from scripts.utils import (
     TEMPLATES_DIR,
     ensure_dir,
     get_categories,
+    GOOGLE_SITE_VERIFICATION,
     load_database,
+    PINTEREST_DOMAIN_VERIFY,
+    PROJECT_TYPE,
     slugify,
     truncate,
 )
@@ -198,6 +201,9 @@ def create_jinja_env() -> Environment:
             "enable_adsense": ENABLE_ADSENSE,
             "enable_amazon": ENABLE_AMAZON,
             "enable_pinterest": ENABLE_PINTEREST,
+            "google_site_verification": GOOGLE_SITE_VERIFICATION,
+            "pinterest_domain_verify": PINTEREST_DOMAIN_VERIFY,
+            "project_type": PROJECT_TYPE,
         }
     )
 
@@ -208,19 +214,53 @@ def copy_static_assets():
     """Copy static assets (CSS, JS, images, ads.txt, robots.txt) to dist/."""
     asset_dirs = ["css", "js", "images"]
 
+    # Ensure we use absolute paths resolved relative to the actual project root where the script runs
+    absolute_src = Path(SRC_DIR).resolve()
+    absolute_dist = Path(DIST_DIR).resolve()
+
     for asset_dir in asset_dirs:
-        src = SRC_DIR / asset_dir
-        dst = DIST_DIR / asset_dir
+        src = absolute_src / asset_dir
+        dst = absolute_dist / asset_dir
         if src.exists():
             if dst.exists():
                 shutil.rmtree(dst)
             shutil.copytree(src, dst)
 
     # Copy root-level files
-    for filename in ["ads.txt", "robots.txt", "_headers", "_redirects"]:
-        src_file = SRC_DIR / filename
+    for filename in ["_headers", "_redirects"]:
+        src_file = absolute_src / filename
         if src_file.exists():
-            shutil.copy2(src_file, DIST_DIR / filename)
+            shutil.copy2(src_file, absolute_dist / filename)
+
+    # robots.txt handling
+    src_robots = absolute_src / "robots.txt"
+    robots_path = absolute_dist / "robots.txt"
+    if src_robots.exists():
+        shutil.copy2(src_robots, robots_path)
+        # Ensure Sitemap link is present
+        content = robots_path.read_text(encoding="utf-8")
+        if "Sitemap:" not in content:
+            with open(robots_path, "a", encoding="utf-8") as f:
+                f.write(f"\nSitemap: {SITE_URL}/sitemap.xml\n")
+    else:
+        robots_content = f"User-agent: *\nAllow: /\n\nSitemap: {SITE_URL}/sitemap.xml\n"
+        robots_path.write_text(robots_content, encoding="utf-8")
+
+    # ads.txt handling
+    src_ads = absolute_src / "ads.txt"
+    ads_txt_path = absolute_dist / "ads.txt"
+    if src_ads.exists():
+        shutil.copy2(src_ads, ads_txt_path)
+    elif ENABLE_ADSENSE and ADSENSE_PUBLISHER_ID:
+        publisher_id = ADSENSE_PUBLISHER_ID.replace("ca-pub-", "")
+        ads_txt_content = f"google.com, pub-{publisher_id}, DIRECT, f08c47fec0942fa0\n"
+        ads_txt_path.write_text(ads_txt_content, encoding="utf-8")
+
+    # Automatically generate HTML verification file
+    if GOOGLE_SITE_VERIFICATION:
+        verify_path = absolute_dist / f"{GOOGLE_SITE_VERIFICATION}.html"
+        verify_content = f"google-site-verification: {GOOGLE_SITE_VERIFICATION}.html"
+        verify_path.write_text(verify_content, encoding="utf-8")
 
 
 
@@ -309,6 +349,23 @@ def build_item_pages(env: Environment, items: list, categories: dict):
             page_description=truncate(item["description"]),
             page_url=f"{SITE_URL}/item/{item['slug']}.html",
             canonical_url=f"{SITE_URL}/item/{item['slug']}.html",
+            # Social Image Metadata
+            og_image=f"{SITE_URL}/images/social/og-{item['slug']}.png",
+            pinterest_image=f"{SITE_URL}/images/social/pin-{item['slug']}.png",
+            # Automated Schema.org (SoftwareApplication)
+            item_schema={
+                "@context": "https://schema.org",
+                "@type": "SoftwareApplication" if PROJECT_TYPE in ["master", "directory", "tools"] else "WebPage",
+                "name": item['title'],
+                "description": truncate(item["description"]),
+                "applicationCategory": item["category"],
+                "operatingSystem": "Web",
+                "offers": {
+                    "@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "USD"
+                }
+            }
         )
 
         output_path = items_dir / f"{item['slug']}.html"
@@ -354,6 +411,42 @@ def build_category_pages(env: Environment, categories: dict):
     print(f"  ✓ Generated {len(categories)} category pages → dist/category/")
 
 
+def build_listicle_pages(env: Environment, categories: dict):
+    """Generate programmatic 'Top 10' listicle pages for each category."""
+    try:
+        template = env.get_template("listicle.html")
+    except Exception:
+        print("  ⚠️ listicle.html not found. Skipping listicle generation.")
+        return
+
+    listicle_dir = DIST_DIR / "best"
+    ensure_dir(listicle_dir)
+
+    for name, items in categories.items():
+        if len(items) < 3: # Only generate for categories with enough content
+            continue
+            
+        cat_slug = slugify(name)
+        
+        html = template.render(
+            category_name=name,
+            category_slug=cat_slug,
+            items=items,
+            page_title=f"Top 10 Best {name} APIs (Free & Open-Source) | {SITE_NAME}",
+            page_description=f"Discover the top 10 best {name.lower()} APIs for your next project. Curated list of free, high-quality {name.lower()} data sources.",
+            page_url=f"{SITE_URL}/best/best-{cat_slug}-apis.html",
+            canonical_url=f"{SITE_URL}/best/best-{cat_slug}-apis.html",
+            # Social Cards
+            og_image=f"{SITE_URL}/images/social/og-best-{cat_slug}.png",
+            pinterest_image=f"{SITE_URL}/images/social/pin-best-{cat_slug}.png",
+        )
+
+        output_path = listicle_dir / f"best-{cat_slug}-apis.html"
+        output_path.write_text(minify_html(html), encoding="utf-8")
+
+    print(f"  ✓ Generated listicle pages → dist/best/")
+
+
 def build_index_page(env: Environment, items: list, categories: dict):
     """Generate the homepage.
 
@@ -382,6 +475,9 @@ def build_index_page(env: Environment, items: list, categories: dict):
         page_description=SITE_DESCRIPTION,
         page_url=SITE_URL,
         canonical_url=SITE_URL,
+        # Social Presence Metadata
+        og_image=f"{SITE_URL}/images/social/og-index.png",
+        pinterest_image=f"{SITE_URL}/images/social/pin-index.png",
     )
 
     output_path = DIST_DIR / "index.html"
@@ -438,6 +534,7 @@ def build_site(database_path: Path = None):
     # Build pages
     build_item_pages(env, items, categories)
     build_category_pages(env, categories)
+    build_listicle_pages(env, categories)
     build_index_page(env, items, categories)
     build_404_page(env)
 
@@ -447,6 +544,13 @@ def build_site(database_path: Path = None):
 
     # Optimize images
     optimize_images()
+
+    # Generate Social Images (Pins/OG Cards)
+    try:
+        from scripts.generate_social_images import main as gen_social
+        gen_social()
+    except Exception as e:
+        print(f"  ⚠️ Social image generation failed: {e}")
     # Search Index Generation
     search_items = []
     for item in items:

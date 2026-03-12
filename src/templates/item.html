@@ -1,22 +1,11 @@
 {% extends "base.html" %}
 
 {% block head_extra %}
+{% if item_schema %}
 <script type="application/ld+json">
-{
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "{{ item.title }}",
-    "description": "{{ item.description }}",
-    "url": "{{ item.url }}",
-    "applicationCategory": "{{ item.category }}",
-    "operatingSystem": "Web",
-    "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-    }
-}
+{{ item_schema | tojson | safe }}
 </script>
+{% endif %}
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",

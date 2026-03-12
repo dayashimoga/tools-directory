@@ -11,24 +11,49 @@
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
     <link rel="preload" href="/css/styles.css" as="style">
 
+    <!-- Verification Tags -->
+    {% if google_site_verification %}
+    <meta name="google-site-verification" content="{{ google_site_verification }}">
+    {% endif %}
+
+    {% if pinterest_domain_verify and enable_pinterest %}
+    <meta name="p:domain_verify" content="{{ pinterest_domain_verify }}">
+    {% endif %}
+
+    <!-- Analytics & Monetization -->
+    {% if ga_measurement_id %}
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_measurement_id }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '{{ ga_measurement_id }}');
+    </script>
+    {% endif %}
+
+    {% if enable_adsense and adsense_publisher_id %}
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ adsense_publisher_id }}"
+     crossorigin="anonymous"></script>
+    {% endif %}
+
+    <!-- Deployment Trigger V2 -->
+
     <!-- Open Graph -->
     <meta property="og:title" content="{{ page_title }}">
     <meta property="og:description" content="{{ page_description }}">
     <meta property="og:url" content="{{ page_url }}">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="{{ site_name }}">
-    <meta property="og:image" content="{{ site_url }}/images/pinterest-cover.png">
+    <meta property="og:image" content="{{ og_image if og_image else site_url + '/images/og-image.png' }}">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ page_title }}">
     <meta name="twitter:description" content="{{ page_description }}">
-    <meta name="twitter:image" content="{{ site_url }}/images/og-image.png">
-
-    {% if enable_pinterest %}
-    <!-- Pinterest Domain Verification -->
-    <meta name="p:domain_verify" content="c816c2b41079835efd234cb5afef59bf">
-    {% endif %}
+    <!-- Pinterest Card -->
+    <meta name="pinterest-rich-pin" content="true">
+    <meta name="twitter:image" content="{{ og_image if og_image else site_url + '/images/og-image.png' }}">
 
     <link rel="alternate" type="application/rss+xml" title="{{ site_name }} RSS Feed" href="{{ site_url }}/feed.xml">
 
