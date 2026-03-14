@@ -56,6 +56,8 @@ def get_priority(page: str) -> str:
         return "1.0"
     elif page.startswith("category/"):
         return "0.8"
+    elif page.startswith("best/"):
+        return "0.7"
     elif page.startswith("item/"):
         return "0.6"
     else:
@@ -74,6 +76,8 @@ def get_changefreq(page: str) -> str:
     if page == "index.html":
         return "weekly"
     elif page.startswith("category/"):
+        return "weekly"
+    elif page.startswith("best/"):
         return "weekly"
     else:
         return "monthly"

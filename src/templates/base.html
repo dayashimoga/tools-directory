@@ -21,21 +21,7 @@
     {% endif %}
 
     <!-- Analytics & Monetization -->
-    {% if ga_measurement_id %}
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_measurement_id }}"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', '{{ ga_measurement_id }}');
-    </script>
-    {% endif %}
 
-    {% if enable_adsense and adsense_publisher_id %}
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ adsense_publisher_id }}"
-     crossorigin="anonymous"></script>
-    {% endif %}
 
     <!-- Deployment Trigger V2 -->
 

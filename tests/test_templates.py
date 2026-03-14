@@ -27,6 +27,13 @@ def real_env():
         "current_year": 2025,
         "ga_measurement_id": "G-TEST",
         "adsense_publisher_id": "ca-pub-TEST",
+        "amazon_affiliate_tag": "test-20",
+        "enable_adsense": True,
+        "enable_amazon": True,
+        "enable_pinterest": True,
+        "google_site_verification": "google-test",
+        "pinterest_domain_verify": "c816c2b41079835efd234cb5afef59bf",
+        "project_type": "master",
     })
     return env
 
@@ -43,8 +50,8 @@ class TestBaseTemplate:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert "<title>Test Title</title>" in html
 
@@ -57,8 +64,8 @@ class TestBaseTemplate:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert 'content="My description"' in html
 
@@ -71,8 +78,8 @@ class TestBaseTemplate:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert "G-TEST" in html
 
@@ -85,8 +92,8 @@ class TestBaseTemplate:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert "ca-pub-TEST" in html
 
@@ -99,11 +106,26 @@ class TestBaseTemplate:
             canonical_url="https://test.com/og",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert 'property="og:title"' in html
         assert 'property="og:description"' in html
+
+    def test_contains_pinterest_verify(self, real_env):
+        tpl = real_env.get_template("index.html")
+        html = tpl.render(
+            page_title="Test",
+            page_description="Test",
+            page_url="https://test.com",
+            canonical_url="https://test.com",
+            categories=[],
+            featured_items=[],
+            total_categories=0,
+            enable_pinterest=True,
+        )
+        assert 'name="p:domain_verify"' in html
+        assert 'content="c816c2b41079835efd234cb5afef59bf"' in html
 
 
 class TestItemTemplate:
@@ -133,9 +155,10 @@ class TestItemTemplate:
             page_description="Test",
             page_url="https://test.com",
             canonical_url="https://test.com",
+            enable_amazon=True,
         )
         assert "application/ld+json" in html
-        assert "SoftwareApplication" in html
+        assert "BreadcrumbList" in html
 
     def test_contains_breadcrumb(self, real_env, sample_items):
         tpl = real_env.get_template("item.html")
@@ -147,6 +170,7 @@ class TestItemTemplate:
             page_description="Test",
             page_url="https://test.com",
             canonical_url="https://test.com",
+            enable_amazon=True,
         )
         assert "breadcrumb" in html.lower()
 
@@ -160,6 +184,7 @@ class TestItemTemplate:
             page_description="Test",
             page_url="https://test.com",
             canonical_url="https://test.com",
+            enable_amazon=True,
         )
         assert "adsbygoogle" in html
 
@@ -172,6 +197,7 @@ class TestItemTemplate:
             page_description="Test",
             page_url="https://test.com",
             canonical_url="https://test.com",
+            enable_amazon=True,
         )
         assert sample_items[1]["title"] in html
 
@@ -181,26 +207,26 @@ class TestCategoryTemplate:
 
     def test_renders_category(self, real_env, sample_items):
         tpl = real_env.get_template("category.html")
-        all_cats = [{"name": "Transportation", "slug": "transportation", "count": 2}]
+        all_cats = [{"name": "Animals", "slug": "animals", "count": 2}]
         html = tpl.render(
-            category_name="Transportation",
-            category_slug="transportation",
+            category_name="Animals",
+            category_slug="animals",
             items=sample_items[:2],
             item_count=2,
             all_categories=all_cats,
-            page_title="Free Transportation Web Setup Tools | Test Site",
-            page_description="Browse 2 free public tools for transportation. Find the best data for your next project.",
-            page_url="https://test.com/category/transportation.html",
-            canonical_url="https://test.com/category/transportation.html",
+            page_title="Animals APIs",
+            page_description="Browse animals APIs",
+            page_url="https://test.com/category/animals.html",
+            canonical_url="https://test.com/category/animals.html",
         )
-        assert "Transportation" in html
-        assert "NYC Taxi" in html
+        assert "Animals" in html
+        assert "Dog API" in html
 
     def test_contains_search_filter(self, real_env, sample_items):
         tpl = real_env.get_template("category.html")
         html = tpl.render(
-            category_name="Transportation",
-            category_slug="transportation",
+            category_name="Animals",
+            category_slug="animals",
             items=sample_items[:2],
             item_count=2,
             all_categories=[],
@@ -208,6 +234,7 @@ class TestCategoryTemplate:
             page_description="Test",
             page_url="https://test.com",
             canonical_url="https://test.com",
+            enable_amazon=True,
         )
         assert "category-search" in html
 
@@ -227,7 +254,76 @@ class TestErrorTemplate:
         assert "Not Found" in html
 
 
-# TestAmazonAffiliateBooks removed. No books in the Open Source templates.
+class TestAmazonAffiliateBooks:
+    """Test Amazon affiliate book recommendations in item template."""
+
+    def test_shows_book_links(self, real_env, sample_items):
+        tpl = real_env.get_template("item.html")
+        books = [
+            {"title": "Test Book", "author": "Test Author", "url": "https://www.amazon.com/dp/1234?tag=test-20"},
+        ]
+        html = tpl.render(
+            item=sample_items[0],
+            related_items=[],
+            recommended_books=books,
+            page_title="Test",
+            page_description="Test",
+            page_url="https://test.com",
+            canonical_url="https://test.com",
+            enable_amazon=True,
+        )
+        assert "Test Book" in html
+        assert "Test Author" in html
+        assert "amazon.com/dp/1234" in html
+
+    def test_shows_affiliate_disclosure(self, real_env, sample_items):
+        tpl = real_env.get_template("item.html")
+        books = [
+            {"title": "Book", "author": "Author", "url": "https://amazon.com/dp/X?tag=t"},
+        ]
+        html = tpl.render(
+            item=sample_items[0],
+            related_items=[],
+            recommended_books=books,
+            page_title="Test",
+            page_description="Test",
+            page_url="https://test.com",
+            canonical_url="https://test.com",
+            enable_amazon=True,
+        )
+        assert "Amazon Associate" in html
+
+    def test_no_books_section_without_data(self, real_env, sample_items):
+        tpl = real_env.get_template("item.html")
+        html = tpl.render(
+            item=sample_items[0],
+            related_items=[],
+            recommended_books=[],
+            page_title="Test",
+            page_description="Test",
+            page_url="https://test.com",
+            canonical_url="https://test.com",
+            enable_amazon=True,
+        )
+        assert "sidebar-books" not in html
+
+    def test_multiple_books_rendered(self, real_env, sample_items):
+        tpl = real_env.get_template("item.html")
+        books = [
+            {"title": "Book One", "author": "Author A", "url": "https://amazon.com/dp/A"},
+            {"title": "Book Two", "author": "Author B", "url": "https://amazon.com/dp/B"},
+        ]
+        html = tpl.render(
+            item=sample_items[0],
+            related_items=[],
+            recommended_books=books,
+            page_title="Test",
+            page_description="Test",
+            page_url="https://test.com",
+            canonical_url="https://test.com",
+        )
+        assert "Book One" in html
+        assert "Book Two" in html
 
 
 class TestAdSensePlaceholder:
@@ -279,8 +375,8 @@ class TestWorldClock:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert "world-clock" in html
         assert "clock-time" in html
@@ -294,8 +390,8 @@ class TestWorldClock:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         for city in ["New York", "London", "Dubai", "Mumbai", "Singapore",
                       "Tokyo", "Sydney"]:
@@ -310,8 +406,8 @@ class TestWorldClock:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         assert "time-converter" in html
         assert "converter-datetime" in html
@@ -330,8 +426,8 @@ class TestWorldClock:
             canonical_url="https://test.com",
             categories=[],
             featured_items=[],
-            total_apis=0,
             total_categories=0,
+            enable_pinterest=True,
         )
         # Check that both From and To selectors have timezone options
         assert "My Local Time" in html  # LOCAL option in from-tz

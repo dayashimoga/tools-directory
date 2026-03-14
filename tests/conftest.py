@@ -16,47 +16,62 @@ if str(PROJECT_ROOT) not in sys.path:
 
 @pytest.fixture
 def sample_items():
-    """A small sample tool for testing."""
+    """A small sample dataset for testing."""
     return [
         {
-            "title": "NYC Taxi and Limousine Commission Trip Record Data",
-            "description": "Taxi trip records",
-            "category": "Transportation",
-            "url": "https://nyc.gov/",
-            "platform": "Parquet / CSV",
-            "tool_type": "50GB+",
-            "pricing": "Public Domain",
-            "slug": "nyc-taxi-and-limousine-commission-trip-record-data",
+            "title": "Dog API",
+            "description": "Dog facts and images",
+            "category": "Animals",
+            "url": "https://dog.ceo/dog-api/",
+            "auth": "None",
+            "https": True,
+            "cors": "yes",
+            "slug": "dog-api",
+            "pricing": "Free",
         },
         {
-            "title": "World Bank Open Data",
-            "description": "Global development data",
-            "category": "Economics & Demographics",
-            "url": "https://data.worldbank.org/",
-            "platform": "CSV / JSON / XML",
-            "tool_type": "Various",
-            "pricing": "CC BY 4.0",
-            "slug": "world-bank-open-data",
+            "title": "Cat Facts",
+            "description": "Random cat facts",
+            "category": "Animals",
+            "url": "https://catfact.ninja/",
+            "auth": "None",
+            "https": True,
+            "cors": "yes",
+            "slug": "cat-facts",
+            "pricing": "Free",
         },
         {
-            "title": "Common Crawl",
-            "description": "Web crawl data repository",
-            "category": "Web & Text",
-            "url": "https://commoncrawl.org/",
-            "platform": "WARC",
-            "tool_type": "Petabytes",
-            "pricing": "Open usage terms",
-            "slug": "common-crawl",
+            "title": "OpenWeatherMap",
+            "description": "Current and forecast weather data with global coverage",
+            "category": "Weather",
+            "url": "https://openweathermap.org/api",
+            "auth": "apiKey",
+            "https": True,
+            "cors": "yes",
+            "slug": "openweathermap",
+            "pricing": "Freemium",
         },
         {
-            "title": "Wikipedia Dumps",
-            "description": "Full Wikipedia database dumps",
-            "category": "Web & Text",
-            "url": "https://dumps.wikimedia.org/",
-            "platform": "XML / JSON",
-            "tool_type": "20GB+",
-            "pricing": "CC BY-SA 4.0",
-            "slug": "wikipedia-dumps",
+            "title": "Alpha Vantage",
+            "description": "Real-time and historical stock market data",
+            "category": "Finance",
+            "url": "https://www.alphavantage.co/",
+            "auth": "apiKey",
+            "https": True,
+            "cors": "unknown",
+            "slug": "alpha-vantage",
+            "pricing": "Free",
+        },
+        {
+            "title": "Spotify",
+            "description": "Music metadata, streaming, and playlist management",
+            "category": "Music",
+            "url": "https://developer.spotify.com/",
+            "auth": "OAuth",
+            "https": True,
+            "cors": "unknown",
+            "slug": "spotify",
+            "pricing": "Free",
         },
     ]
 
@@ -74,23 +89,32 @@ def sample_raw_api_entries():
     """Raw API entries as returned by the public-apis API."""
     return [
         {
-            "name": "NYC Taxi trip data",
-            "description": "Taxi trip records",
-            "category": "Transportation",
-            "url": "https://nyc.gov/",
-            "platform": "CSV",
-            "tool_type": "50GB",
-            "pricing": "Public Domain"
+            "API": "Dog API",
+            "Description": "Dog facts and images",
+            "Auth": "",
+            "HTTPS": True,
+            "Cors": "yes",
+            "Link": "https://dog.ceo/dog-api/",
+            "Category": "Animals",
         },
         {
-            "name": "World Bank Open Data",
-            "description": "Global development data",
-            "category": "Economics & Demographics",
-            "url": "https://data.worldbank.org/",
-            "platform": "JSON",
-            "tool_type": "Various",
-            "pricing": "CC BY 4.0"
-        }
+            "API": "Cat Facts",
+            "Description": "Random cat facts",
+            "Auth": "",
+            "HTTPS": True,
+            "Cors": "yes",
+            "Link": "https://catfact.ninja/",
+            "Category": "Animals",
+        },
+        {
+            "API": "OpenWeatherMap",
+            "Description": "Weather data",
+            "Auth": "apiKey",
+            "HTTPS": True,
+            "Cors": "yes",
+            "Link": "https://openweathermap.org/api",
+            "Category": "Weather",
+        },
     ]
 
 
@@ -119,7 +143,7 @@ def templates_dir(tmp_path):
         '{% extends "base.html" %}'
         "{% block content %}"
         "<h1>{{ site_name }}</h1>"
-        "<p>{{ total_apis }} Tools in {{ total_categories }} categories</p>"
+        "<p>{{ total_apis }} APIs in {{ total_categories }} categories</p>"
         "{% for cat in categories %}"
         '<a href="/category/{{ cat.slug }}.html">{{ cat.name }} ({{ cat.count }})</a>'
         "{% endfor %}"
@@ -129,7 +153,7 @@ def templates_dir(tmp_path):
         "{% endblock %}",
         encoding="utf-8",
     )
-
+ 
     # Item template
     item = tpl_dir / "item.html"
     item.write_text(
@@ -138,9 +162,7 @@ def templates_dir(tmp_path):
         "<h1>{{ item.title }}</h1>"
         "<p>{{ item.description }}</p>"
         "<p>Category: {{ item.category }}</p>"
-        "<p>Platform: {{ item.platform }}</p>"
-        "<p>Size: {{ item.tool_type }}</p>"
-        "<p>Pricing: {{ item.pricing }}</p>"
+        "<p>Auth: {{ item.auth }}</p>"
         '<a href="{{ item.url }}">Visit</a>'
         "{% for rel in related_items %}"
         '<a href="/item/{{ rel.slug }}.html">{{ rel.title }}</a>'
@@ -155,7 +177,7 @@ def templates_dir(tmp_path):
         '{% extends "base.html" %}'
         "{% block content %}"
         "<h1>{{ category_name }}</h1>"
-        "<p>{{ item_count }} Tools</p>"
+        "<p>{{ item_count }} APIs</p>"
         "{% for item in items %}"
         '<a href="/item/{{ item.slug }}.html">{{ item.title }}</a>'
         "{% endfor %}"
@@ -172,6 +194,19 @@ def templates_dir(tmp_path):
         '{% extends "base.html" %}'
         "{% block content %}"
         "<h1>404</h1><p>Not Found</p>"
+        "{% endblock %}",
+        encoding="utf-8",
+    )
+
+    # Listicle template
+    listicle = tpl_dir / "listicle.html"
+    listicle.write_text(
+        '{% extends "base.html" %}'
+        "{% block content %}"
+        "<h1>{{ category_name }}</h1>"
+        "{% for item in items %}"
+        "<div>{{ item.title }}</div>"
+        "{% endfor %}"
         "{% endblock %}",
         encoding="utf-8",
     )

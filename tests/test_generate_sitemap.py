@@ -22,11 +22,11 @@ def mock_dist(tmp_path):
     # Index
     (dist / "index.html").write_text("<html></html>", encoding="utf-8")
 
-    # API pages
-    api_dir = dist / "api"
-    api_dir.mkdir()
-    (api_dir / "dog-api.html").write_text("<html></html>", encoding="utf-8")
-    (api_dir / "cat-facts.html").write_text("<html></html>", encoding="utf-8")
+    # Item pages
+    item_dir = dist / "item"
+    item_dir.mkdir()
+    (item_dir / "dog-api.html").write_text("<html></html>", encoding="utf-8")
+    (item_dir / "cat-facts.html").write_text("<html></html>", encoding="utf-8")
 
     # Category pages
     cat_dir = dist / "category"
@@ -76,7 +76,7 @@ class TestGetPriority:
         assert get_priority("category/animals.html") == "0.8"
 
     def test_api_medium(self):
-        assert get_priority("api/dog-api.html") == "0.6"
+        assert get_priority("item/dog-api.html") == "0.6"
 
     def test_other_low(self):
         assert get_priority("about.html") == "0.5"
@@ -92,23 +92,23 @@ class TestGetChangefreq:
         assert get_changefreq("category/animals.html") == "weekly"
 
     def test_api_monthly(self):
-        assert get_changefreq("api/dog-api.html") == "monthly"
+        assert get_changefreq("item/dog-api.html") == "monthly"
 
 
 class TestBuildSitemapXml:
     """Test sitemap XML generation."""
 
     def test_valid_xml(self):
-        pages = ["index.html", "api/test.html"]
+        pages = ["index.html", "item/test.html"]
         xml = build_sitemap_xml(pages, "https://test.com")
         assert '<?xml version' in xml
         assert "http://www.sitemaps.org/schemas/sitemap/0.9" in xml
 
     def test_contains_all_urls(self):
-        pages = ["index.html", "api/dog.html", "category/animals.html"]
+        pages = ["index.html", "item/dog.html", "category/animals.html"]
         xml = build_sitemap_xml(pages, "https://test.com")
         assert "https://test.com/" in xml
-        assert "https://test.com/api/dog.html" in xml
+        assert "https://test.com/item/dog.html" in xml
         assert "https://test.com/category/animals.html" in xml
 
     def test_index_url_is_root(self):

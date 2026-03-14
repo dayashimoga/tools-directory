@@ -4,7 +4,7 @@ venv/
 ENV/
 env/
 p_venv/
-
+.test-venv/
 # Python Cache and Coverage
 __pycache__/
 *.py[cod]
@@ -51,6 +51,11 @@ tests_output.txt
 final_test_report.txt
 test_summary.txt
 test_report*.txt
+test_report.txt
+cov_summary.txt
+report.xml
+cov_report.json
+tmp_parse*.py
 temp_*/
 
 # OS and IDE

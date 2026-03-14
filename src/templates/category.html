@@ -90,11 +90,17 @@
         <!-- Sidebar -->
         <aside class="category-sidebar" id="category-sidebar">
             <!-- Ad Unit -->
+            {% if enable_adsense and adsense_publisher_id != 'ca-pub-XXXXXXXXXX' %}
             <div class="ad-unit sidebar-ad">
                 <ins class="adsbygoogle" style="display:block" data-ad-client="{{ adsense_publisher_id }}"
                     data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
                 <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
             </div>
+            {% elif enable_adsense %}
+            <div class="ad-placeholder sidebar-ad">
+                <span class="ad-placeholder-text">📢 Sidebar Ad Space</span>
+            </div>
+            {% endif %}
 
             <!-- All Categories -->
             <div class="sidebar-card" id="sidebar-categories">

@@ -308,6 +308,30 @@ def optimize_images():
 
     if processed_count > 0:
         print(f"    ✓ Optimized {processed_count} images (Saved {total_saved / 1024:.1f} KB)")
+def build_breadcrumb_schema(crumbs: list) -> dict:
+    """Build a BreadcrumbList JSON-LD schema for rich Google snippets.
+
+    Args:
+        crumbs: List of (name, url) tuples representing the breadcrumb trail.
+
+    Returns:
+        JSON-LD dict for a BreadcrumbList.
+    """
+    items_list = []
+    for i, (name, url) in enumerate(crumbs, start=1):
+        items_list.append({
+            "@type": "ListItem",
+            "position": i,
+            "name": name,
+            "item": url,
+        })
+    return {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": items_list,
+    }
+
+
 def build_item_pages(env: Environment, items: list, categories: dict):
     """Generate individual item pages.
 
@@ -341,6 +365,14 @@ def build_item_pages(env: Environment, items: list, categories: dict):
             for b in raw_books
         ]
 
+        # Breadcrumb: Home > Category > Item
+        cat_slug = slugify(item["category"])
+        breadcrumb = build_breadcrumb_schema([
+            (SITE_NAME, SITE_URL),
+            (item["category"], f"{SITE_URL}/category/{cat_slug}.html"),
+            (item["title"], f"{SITE_URL}/item/{item['slug']}.html"),
+        ])
+
         html = template.render(
             item=item,
             related_items=related,
@@ -352,6 +384,8 @@ def build_item_pages(env: Environment, items: list, categories: dict):
             # Social Image Metadata
             og_image=f"{SITE_URL}/images/social/og-{item['slug']}.png",
             pinterest_image=f"{SITE_URL}/images/social/pin-{item['slug']}.png",
+            # Breadcrumb JSON-LD for rich snippets
+            breadcrumb_schema=breadcrumb,
             # Automated Schema.org (SoftwareApplication)
             item_schema={
                 "@context": "https://schema.org",
@@ -393,6 +427,12 @@ def build_category_pages(env: Environment, categories: dict):
     for name, items in categories.items():
         cat_slug = slugify(name)
 
+        # Breadcrumb: Home > Category
+        breadcrumb = build_breadcrumb_schema([
+            (SITE_NAME, SITE_URL),
+            (name, f"{SITE_URL}/category/{cat_slug}.html"),
+        ])
+
         html = template.render(
             category_name=name,
             category_slug=cat_slug,
@@ -403,6 +443,7 @@ def build_category_pages(env: Environment, categories: dict):
             page_description=f"Browse {len(items)} free {name} APIs. Find the best open APIs for {name.lower()} development.",
             page_url=f"{SITE_URL}/category/{cat_slug}.html",
             canonical_url=f"{SITE_URL}/category/{cat_slug}.html",
+            breadcrumb_schema=breadcrumb,
         )
 
         output_path = cat_dir / f"{cat_slug}.html"

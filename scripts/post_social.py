@@ -43,34 +43,35 @@ def pick_random_item(items: list) -> dict:
 
 
 def platform_post(item: dict) -> str:
-    """Platform a promotional post for the given item.
+    """Format a promotional post for the given item.
 
     Args:
         item: Item dict with title, description, category, url, slug.
 
     Returns:
-        Platformted post string within Mastodon's 500-char limit.
+        Formatted post string within Mastodon's 500-char limit.
     """
     item_url = f"{SITE_URL}/item/{item['slug']}.html"
-    category = item.get("category", "Tool")
-    tool_platform = item.get("platform", "Web")
-    pricing_type = item.get("pricing", "Free")
+    category = item.get("category", "API")
+    auth = item.get("auth", "None")
+    pricing = item.get("pricing", "Free")
 
     # Build hashtags from category
     hashtag = f"#{slugify(category).replace('-', '')}"
 
     lines = [
-        f"🔗 {item['title']} - Web Setup Tool",
+        f"🔗 {item['title']}",
         f"",
         f"{item['description']}",
         f"",
         f"🏷️ Category: {category}",
-        f"📊 Platform: {tool_platform}",
-        f"✅ Pricing: {pricing_type}",
+        f"💰 Pricing: {pricing}",
+        f"🔐 Auth: {auth}",
+        f"🌐 {'HTTPS ✅' if item.get('https') else 'HTTP only'}",
         f"",
         f"Check it out → {item_url}",
         f"",
-        f"#WebTools #DeveloperTools #PublicTool {hashtag} #Utility",
+        f"#API #OpenSource #FreeDev {hashtag} #WebDev #WebTools #DeveloperTools",
     ]
 
     post = "\n".join(lines)
