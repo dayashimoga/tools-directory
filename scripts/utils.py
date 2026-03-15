@@ -150,21 +150,29 @@ def load_database(path: Optional[Path] = None) -> list:
     return data
 
 
-def save_database(items: list, path: Optional[Path] = None) -> None:
+def save_database(items: list, path: Optional[Path] = None) -> bool:
     """Save items to the database JSON file with deterministic sorting.
 
     Args:
         items: List of item dictionaries.
         path: Optional path. Defaults to data/database.json.
+    
+    Returns:
+        True if saved successfully, False otherwise.
     """
     if path is None:
         path = DATA_DIR / "database.json"
 
-    ensure_dir(path.parent)
+    try:
+        ensure_dir(path.parent)
 
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(items, f, indent=2, sort_keys=True, ensure_ascii=False)
-        f.write("\n")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(items, f, indent=2, sort_keys=True, ensure_ascii=False)
+            f.write("\n")
+        return True
+    except Exception as e:
+        print(f"  ✗ Error saving database: {e}")
+        return False
 
 
 def ensure_dir(path: Path) -> None:
