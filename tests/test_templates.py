@@ -34,6 +34,8 @@ def real_env():
         "google_site_verification": "google-test",
         "pinterest_domain_verify": "c816c2b41079835efd234cb5afef59bf",
         "project_type": "master",
+        "site_type": "Tools",
+        "social_image_url": "https://test.com/social.png",
     })
     return env
 

@@ -110,8 +110,11 @@ SITE_DESCRIPTION = get_config("SITE_DESCRIPTION", f"The Ultimate Directory of Fr
 
 _SLUG_CACHE = {}
 
-def slugify(text: str) -> str:
+def slugify(text: Any) -> str:
     """Convert text to a URL-safe slug with caching for performance."""
+    if text is None:
+        return ""
+    text = str(text).strip()
     if not text:
         return ""
     if text in _SLUG_CACHE:

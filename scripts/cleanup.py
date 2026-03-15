@@ -1,17 +1,20 @@
 import os
 import shutil
 import glob
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 directories = [
-    r"h:\boring",
-    r"h:\boring\projects\datasets-directory",
-    r"h:\boring\projects\opensource-directory",
-    r"h:\boring\projects\tools-directory",
-    r"h:\boring\projects\prompts-directory",
-    r"h:\boring\projects\cheatsheets-directory",
-    r"h:\boring\projects\boilerplates-directory",
-    r"h:\boring\projects\jobs-directory",
-    r"h:\boring\projects\apistatus-directory"
+    str(PROJECT_ROOT),
+    str(PROJECT_ROOT / "projects" / "datasets-directory"),
+    str(PROJECT_ROOT / "projects" / "opensource-directory"),
+    str(PROJECT_ROOT / "projects" / "tools-directory"),
+    str(PROJECT_ROOT / "projects" / "prompts-directory"),
+    str(PROJECT_ROOT / "projects" / "cheatsheets-directory"),
+    str(PROJECT_ROOT / "projects" / "boilerplates-directory"),
+    str(PROJECT_ROOT / "projects" / "jobs-directory"),
+    str(PROJECT_ROOT / "projects" / "apistatus-directory")
 ]
 
 patterns = [
