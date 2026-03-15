@@ -12,23 +12,11 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # Resolve base directories, prioritizing environment variables, then falling back to local paths
 DATA_DIR = Path(os.environ.get("DATA_DIR", PROJECT_ROOT / "data"))
-# Only fall back to quickutils-master if we are NOT in a project subdirectory or if environment doesn't specify otherwise
-if not DATA_DIR.exists():
-    if (PROJECT_ROOT / "projects" / "quickutils-master" / "data").exists():
-        # Only fallback if we're not inside another project
-        if "projects" not in str(PROJECT_ROOT):
-             DATA_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "data"
 
-DIST_DIR = Path(os.environ.get("DIST_DIR", PROJECT_ROOT / "dist"))
-
+# SRC_DIR resolution
 SRC_DIR = Path(os.environ.get("SRC_DIR", PROJECT_ROOT / "src"))
-if not SRC_DIR.exists() and (PROJECT_ROOT / "projects" / "quickutils-master" / "src").exists():
-    if "projects" not in str(PROJECT_ROOT):
-        SRC_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "src"
 
-TEMPLATES_DIR = SRC_DIR / "templates"
-
-# Dynamic Configuration
+# Project identification logic (moved up for path resolution)
 CONFIG_PATH = PROJECT_ROOT / "project_config.json"
 _CONFIG = {}
 if CONFIG_PATH.exists():
@@ -38,10 +26,44 @@ if CONFIG_PATH.exists():
     except Exception:
         pass
 
-# Project Identification
 if not isinstance(_CONFIG, dict):
     _CONFIG = {}
 PROJECT_TYPE = str(os.environ.get("PROJECT_TYPE", _CONFIG.get("PROJECT_TYPE", "master") if isinstance(_CONFIG, dict) else "master") or "master")
+
+# Intelligent Path Resolution for Mono-repo structure
+# If we are in the root directory (boring) and a PROJECT_TYPE is specified (not master)
+if PROJECT_TYPE != "master" and not "projects" in str(PROJECT_ROOT):
+    # Check if this project exists in the projects/ subdirectory
+    project_sub_dir = PROJECT_ROOT / "projects" / PROJECT_TYPE
+    # Support both 'name' and 'name-directory' folder naming
+    if not project_sub_dir.exists():
+        project_sub_dir = PROJECT_ROOT / "projects" / f"{PROJECT_TYPE}-directory"
+        
+    if project_sub_dir.exists():
+        # Override DATA_DIR and SRC_DIR if they point to root defaults and project overrides exist
+        if DATA_DIR == PROJECT_ROOT / "data" or not DATA_DIR.exists():
+            if (project_sub_dir / "data").exists():
+                DATA_DIR = project_sub_dir / "data"
+        if SRC_DIR == PROJECT_ROOT / "src" or not SRC_DIR.exists():
+            if (project_sub_dir / "src").exists():
+                SRC_DIR = project_sub_dir / "src"
+            elif (project_sub_dir / "templates").exists():
+                # Fallback if src is missing but templates exist directly
+                SRC_DIR = project_sub_dir
+
+# Final fallbacks for pure master builds
+if not DATA_DIR.exists():
+    if (PROJECT_ROOT / "projects" / "quickutils-master" / "data").exists():
+        DATA_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "data"
+
+if not SRC_DIR.exists():
+    if (PROJECT_ROOT / "projects" / "quickutils-master" / "src").exists():
+        SRC_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "src"
+
+DIST_DIR = Path(os.environ.get("DIST_DIR", PROJECT_ROOT / "dist"))
+TEMPLATES_DIR = SRC_DIR / "templates"
+if not TEMPLATES_DIR.exists() and (SRC_DIR / "src" / "templates").exists():
+    TEMPLATES_DIR = SRC_DIR / "src" / "templates"
 
 def get_config(key, default):
     # 1. Check environment variable
@@ -71,7 +93,7 @@ def get_config(key, default):
 GH_USERNAME = get_config("GH_USERNAME", "dayashimoga")
 GA_MEASUREMENT_ID = get_config("GA_MEASUREMENT_ID", "G-QPDP38ZCCV")
 ADSENSE_PUBLISHER_ID = get_config("ADSENSE_PUBLISHER_ID", "ca-pub-5193703345853377")
-AMAZON_AFFILIATE_TAG = get_config("AMAZON_AFFILIATE_TAG", "quickutils-20")
+AMAZON_AFFILIATE_TAG = get_config("AMAZON_AFFILIATE_TAG", "quickutils-21")
 GOOGLE_SITE_VERIFICATION = get_config("GOOGLE_SITE_VERIFICATION", "")
 PINTEREST_DOMAIN_VERIFY = get_config("PINTEREST_DOMAIN_VERIFY", "c816c2b41079835efd234cb5afef59bf")
 
