@@ -12,14 +12,19 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # Resolve base directories, prioritizing environment variables, then falling back to local paths
 DATA_DIR = Path(os.environ.get("DATA_DIR", PROJECT_ROOT / "data"))
-if not DATA_DIR.exists() and (PROJECT_ROOT / "projects" / "quickutils-master" / "data").exists():
-    DATA_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "data"
+# Only fall back to quickutils-master if we are NOT in a project subdirectory or if environment doesn't specify otherwise
+if not DATA_DIR.exists():
+    if (PROJECT_ROOT / "projects" / "quickutils-master" / "data").exists():
+        # Only fallback if we're not inside another project
+        if "projects" not in str(PROJECT_ROOT):
+             DATA_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "data"
 
 DIST_DIR = Path(os.environ.get("DIST_DIR", PROJECT_ROOT / "dist"))
 
 SRC_DIR = Path(os.environ.get("SRC_DIR", PROJECT_ROOT / "src"))
 if not SRC_DIR.exists() and (PROJECT_ROOT / "projects" / "quickutils-master" / "src").exists():
-    SRC_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "src"
+    if "projects" not in str(PROJECT_ROOT):
+        SRC_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "src"
 
 TEMPLATES_DIR = SRC_DIR / "templates"
 
@@ -34,7 +39,9 @@ if CONFIG_PATH.exists():
         pass
 
 # Project Identification
-PROJECT_TYPE = str(os.environ.get("PROJECT_TYPE", _CONFIG.get("PROJECT_TYPE", "master")) or "master")
+if not isinstance(_CONFIG, dict):
+    _CONFIG = {}
+PROJECT_TYPE = str(os.environ.get("PROJECT_TYPE", _CONFIG.get("PROJECT_TYPE", "master") if isinstance(_CONFIG, dict) else "master") or "master")
 
 def get_config(key, default):
     # 1. Check environment variable
@@ -42,7 +49,9 @@ def get_config(key, default):
     
     # 2. Check project-specific config overrides
     if val is None:
-        project_overrides = _CONFIG.get("projects", {}).get(PROJECT_TYPE, {})
+        projects_cfg = _CONFIG.get("projects", {})
+        # Try both the abbreviated name and the full directory name
+        project_overrides = projects_cfg.get(PROJECT_TYPE) or projects_cfg.get(f"{PROJECT_TYPE}-directory") or {}
         if key in project_overrides:
             val = project_overrides[key]
             
@@ -72,16 +81,31 @@ ENABLE_AMAZON = get_config("ENABLE_AMAZON", True)
 ENABLE_PINTEREST = get_config("ENABLE_PINTEREST", True)
 
 # Site Identity
-if PROJECT_TYPE == "master" or PROJECT_TYPE == "directory":
+SITE_TYPE_MAP = {
+    "apistatus": "Status Pages",
+    "boilerplates": "Boilerplates",
+    "cheatsheets": "Cheatsheets",
+    "datasets": "Datasets",
+    "jobs": "Jobs",
+    "opensource": "Open Source",
+    "prompts": "Prompts",
+    "tools": "Tools",
+    "dailyfacts": "Daily Facts",
+}
+
+SITE_TYPE = SITE_TYPE_MAP.get(PROJECT_TYPE, "APIs")
+
+if PROJECT_TYPE == "master" or PROJECT_TYPE == "directory" or PROJECT_TYPE == "boringwebsite":
     DEFAULT_SITE_URL = "https://quickutils.top"
     DEFAULT_SITE_NAME = "QuickUtils Directory"
+    SITE_TYPE = "Directory"
 else:
     DEFAULT_SITE_URL = f"https://{PROJECT_TYPE}.quickutils.top"
-    DEFAULT_SITE_NAME = f"QuickUtils {PROJECT_TYPE.capitalize()} Directory"
+    DEFAULT_SITE_NAME = f"QuickUtils {SITE_TYPE} Directory"
 
 SITE_URL = get_config("SITE_URL", DEFAULT_SITE_URL)
 SITE_NAME = get_config("SITE_NAME", DEFAULT_SITE_NAME)
-SITE_DESCRIPTION = get_config("SITE_DESCRIPTION", f"The Ultimate Directory of Free, Open {PROJECT_TYPE.capitalize()} — searchable and categorized.")
+SITE_DESCRIPTION = get_config("SITE_DESCRIPTION", f"The Ultimate Directory of Free, Open {SITE_TYPE} — searchable and categorized.")
 
 
 _SLUG_CACHE = {}
@@ -207,7 +231,8 @@ def truncate(text: str, max_length: int = 160) -> str:
 
     # Ensure we have at least 3 characters room for ellipsis
     limit = int(max(0, max_length - 3))
-    trimmed = text[:limit]
+    content = str(text)
+    trimmed = content[:limit]
 
     # Try to break at a space to avoid cutting words
     if " " in trimmed:

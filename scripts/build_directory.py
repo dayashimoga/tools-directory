@@ -39,6 +39,7 @@ from scripts.utils import (
     load_database,
     PINTEREST_DOMAIN_VERIFY,
     PROJECT_TYPE,
+    SITE_TYPE,
     slugify,
     truncate,
 )
@@ -204,6 +205,7 @@ def create_jinja_env() -> Environment:
             "google_site_verification": GOOGLE_SITE_VERIFICATION,
             "pinterest_domain_verify": PINTEREST_DOMAIN_VERIFY,
             "project_type": PROJECT_TYPE,
+            "site_type": SITE_TYPE,
         }
     )
 
