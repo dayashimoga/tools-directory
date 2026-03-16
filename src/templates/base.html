@@ -147,20 +147,9 @@
                 <div class="footer-links" id="network-footer">
                     <h4>QuickUtils Network</h4>
                     <ul>
-                        <li><a href="https://quickutils.top" target="_blank" rel="noopener">Public APIs</a></li>
-                        <li><a href="https://tools.quickutils.top" target="_blank" rel="noopener">Web Tools</a></li>
-                        <li><a href="https://datasets.quickutils.top" target="_blank" rel="noopener">Free Datasets</a>
-                        </li>
-                        <li><a href="https://opensource.quickutils.top" target="_blank" rel="noopener">Open Source</a>
-                        </li>
-                        <li><a href="https://prompts.quickutils.top" target="_blank" rel="noopener">AI Prompts</a></li>
-                        <li><a href="https://cheatsheets.quickutils.top" target="_blank" rel="noopener">Cheatsheets</a>
-                        </li>
-                        <li><a href="https://boilerplates.quickutils.top" target="_blank"
-                                rel="noopener">Boilerplates</a></li>
-                        <li><a href="https://jobs.quickutils.top" target="_blank" rel="noopener">Tech Jobs</a></li>
-                        <li><a href="https://apistatus.quickutils.top" target="_blank" rel="noopener">API Status</a>
-                        </li>
+                        {% for link in network_links %}
+                        <li><a href="{{ link.url }}" target="_blank" rel="noopener">{{ link.name }}</a></li>
+                        {% endfor %}
                     </ul>
                 </div>
 
@@ -168,8 +157,8 @@
                     <h4>Resources</h4>
                     <ul>
                         <li><a href="https://quickutils.top" target="_blank" rel="noopener">QuickUtils Home</a></li>
-                        <li><a href="https://yourname.gumroad.com/l/submit" target="_blank" rel="noopener">Submit a
-                                Tool</a></li>
+                        <li><a href="https://github.com/dayashimoga/quickutils-master" target="_blank" rel="noopener">Submit a
+                                Tool (GitHub)</a></li>
                     </ul>
                 </div>
             </div>
@@ -265,6 +254,46 @@
 
     <script src="/js/main.js"></script>
     {% block scripts_extra %}{% endblock %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const backToTop = document.createElement('button');
+            backToTop.innerHTML = '↑';
+            backToTop.setAttribute('aria-label', 'Back to top');
+            backToTop.setAttribute('title', 'Back to top');
+            Object.assign(backToTop.style, {
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                width: '45px',
+                height: '45px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--accent, #6366f1)',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '20px',
+                display: 'none',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                zIndex: '9999',
+                transition: 'opacity 0.3s'
+            });
+            document.body.appendChild(backToTop);
+
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    backToTop.style.display = 'flex';
+                } else {
+                    backToTop.style.display = 'none';
+                }
+            });
+
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    </script>
 </body>
 
 </html>

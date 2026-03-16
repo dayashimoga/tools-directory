@@ -324,9 +324,13 @@ class TestMinifyHtml:
 
     def test_minify_failure_returns_original(self):
         from scripts.build_directory import minify_html
-        with patch("scripts.build_directory.htmlmin.minify", side_effect=Exception("Minify error")):
-            result = minify_html("<html></html>")
-            assert result == "<html></html>"
+        try:
+            import htmlmin
+            with patch("scripts.build_directory.htmlmin.minify", side_effect=Exception("Minify error")):
+                result = minify_html("<html></html>")
+                assert result == "<html></html>"
+        except ImportError:
+            pytest.skip("htmlmin not installed")
 
 class TestCopyStaticAssetsExtended:
     """Extended tests for static asset copying."""

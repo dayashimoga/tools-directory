@@ -263,3 +263,39 @@ def truncate(text: str, max_length: int = 160) -> str:
     if " " in trimmed:
         return trimmed.rsplit(" ", 1)[0] + "..."
     return trimmed + "..."
+
+
+def load_network_links() -> list:
+    """Return a list of network sites for dynamic cross-linking from project_config.json."""
+    projects_cfg = _CONFIG.get("projects", {})
+    links = []
+    
+    # Always include the main directory/portal
+    links.append({
+        "name": "Main Site",
+        "url": "https://quickutils.top"
+    })
+    
+    # Add actual projects from config
+    for p_id, p_config in projects_cfg.items():
+        if p_id in ["master", "directory", "boringwebsite"]:
+            continue
+            
+        url = p_config.get("SITE_URL", "")
+        # Fallback if somehow missing
+        if not url:
+            subdomain = p_id.replace('-directory', '')
+            url = f"https://{subdomain}.quickutils.top"
+            
+        # Clean name
+        name = p_config.get("SITE_NAME", p_id.replace('-directory', '').replace('-', ' ').title())
+        # Make name shorter for footer (e.g. 'Boilerplates Directory' -> 'Boilerplates')
+        if name.endswith(" Directory") and name != "Open Source Directory":
+            name = name[:-10]
+            
+        links.append({
+            "name": name,
+            "url": url
+        })
+        
+    return sorted(links, key=lambda x: x["name"])
