@@ -312,6 +312,19 @@ def optimize_images():
 
     if processed_count > 0:
         print(f"    ✓ Optimized {processed_count} images (Saved {total_saved / 1024:.1f} KB)")
+
+def _escape_xml(text: str) -> str:
+    """Escape special characters for safe XML/RSS output."""
+    return (
+        str(text)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&apos;")
+    )
+
+
 def build_breadcrumb_schema(crumbs: list) -> dict:
     """Build a BreadcrumbList JSON-LD schema for rich Google snippets.
 
@@ -605,30 +618,33 @@ def build_site(database_path: Path = None):
         link = f"/item/{item['slug']}.html"
         search_items.append({'title': title, 'description': desc, 'category': cat, 'url': link})
         
-    import json
-    (DIST_DIR / "search.json").write_text(json.dumps(search_items), encoding="utf-8")
+    (DIST_DIR / "search.json").write_text(
+        json.dumps(search_items, ensure_ascii=False), encoding="utf-8"
+    )
 
     # RSS Feed Generation
     rss_items = []
     for item in items[:20]:
-        title = item.get('name', item.get('title', 'Unknown'))
-        desc = item.get('description', '')
+        title = _escape_xml(item.get('name', item.get('title', 'Unknown')))
+        desc = _escape_xml(item.get('description', ''))
         link = f"{SITE_URL}/item/{item['slug']}.html"
         rss_items.append({'title': title, 'description': desc, 'link': link})
         
+    site_name_esc = _escape_xml(SITE_NAME)
+    site_desc_esc = _escape_xml(SITE_DESCRIPTION)
     rss_content = f'''<?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0">
 <channel>
-  <title>{SITE_NAME}</title>
+  <title>{site_name_esc}</title>
   <link>{SITE_URL}</link>
-  <description>{SITE_DESCRIPTION}</description>
+  <description>{site_desc_esc}</description>
 '''
-    for item in rss_items:
+    for rss_item in rss_items:
         rss_content += f'''  <item>
-    <title>{item['title']}</title>
-    <link>{item['link']}</link>
-    <description>{item['description']}</description>
-    <guid>{item['link']}</guid>
+    <title>{rss_item['title']}</title>
+    <link>{rss_item['link']}</link>
+    <description>{rss_item['description']}</description>
+    <guid>{rss_item['link']}</guid>
   </item>
 '''
     rss_content += '''</channel>

@@ -1,6 +1,7 @@
 """Tests for scripts/utils.py"""
 import json
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -267,3 +268,118 @@ class TestSiteIdentity:
         # Verification of the cleanup
         import scripts.utils
         assert not hasattr(scripts.utils, "project_slug")
+
+
+class TestLoadNetworkLinks:
+    """Test the load_network_links function."""
+
+    def test_returns_list(self):
+        from scripts.utils import load_network_links
+        links = load_network_links()
+        assert isinstance(links, list)
+
+    def test_contains_main_site(self):
+        from scripts.utils import load_network_links
+        links = load_network_links()
+        urls = [l["url"] for l in links]
+        assert "https://quickutils.top" in urls
+
+    def test_excludes_master_and_boringwebsite(self):
+        from scripts.utils import load_network_links
+        links = load_network_links()
+        names = [l["name"] for l in links]
+        # 'master' and 'boringwebsite' should not appear as separate entries
+        assert "master" not in [l.lower() for l in names]
+
+    def test_sorted_by_name(self):
+        from scripts.utils import load_network_links
+        links = load_network_links()
+        names = [l["name"] for l in links]
+        assert names == sorted(names)
+
+    def test_network_links_with_mock_config(self, monkeypatch):
+        import scripts.utils
+        monkeypatch.setattr(scripts.utils, "_CONFIG", {
+            "projects": {
+                "test-project": {
+                    "SITE_NAME": "Test Project",
+                    "SITE_URL": "https://test.quickutils.top"
+                },
+                "boringwebsite": {
+                    "SITE_NAME": "Boring",
+                    "SITE_URL": "https://quickutils.top"
+                }
+            }
+        })
+        links = scripts.utils.load_network_links()
+        urls = [l["url"] for l in links]
+        assert "https://test.quickutils.top" in urls
+        # boringwebsite should be excluded
+        names = [l["name"] for l in links]
+        assert "Boring" not in names
+
+    def test_network_links_fallback_url(self, monkeypatch):
+        """When SITE_URL is empty, should construct URL from project ID."""
+        import scripts.utils
+        monkeypatch.setattr(scripts.utils, "_CONFIG", {
+            "projects": {
+                "tools-directory": {
+                    "SITE_NAME": "Tools Directory",
+                    "SITE_URL": ""
+                }
+            }
+        })
+        links = scripts.utils.load_network_links()
+        urls = [l["url"] for l in links]
+        assert "https://tools.quickutils.top" in urls
+
+    def test_directory_suffix_stripped_from_name(self, monkeypatch):
+        """Names ending with ' Directory' should be shortened."""
+        import scripts.utils
+        monkeypatch.setattr(scripts.utils, "_CONFIG", {
+            "projects": {
+                "tools-directory": {
+                    "SITE_NAME": "Tools Directory",
+                    "SITE_URL": "https://tools.quickutils.top"
+                }
+            }
+        })
+        links = scripts.utils.load_network_links()
+        names = [l["name"] for l in links]
+        assert "Tools" in names
+        assert "Tools Directory" not in names
+
+
+class TestSaveDatabaseEdgeCases:
+    """Additional edge cases for save_database."""
+
+    def test_save_database_default_path(self, monkeypatch, tmp_path, sample_items):
+        import scripts.utils
+        monkeypatch.setattr(scripts.utils, "DATA_DIR", tmp_path)
+        result = save_database(sample_items)
+        assert result is True
+        assert (tmp_path / "database.json").exists()
+
+    def test_save_database_returns_false_on_error(self, tmp_path):
+        from scripts.utils import save_database
+        # Write to a path where parent cannot be created
+        with patch("scripts.utils.ensure_dir", side_effect=OSError("fail")):
+            result = save_database([{"a": 1}], tmp_path / "db.json")
+            assert result is False
+
+
+class TestSlugifyEdgeCases:
+    """Additional slugify edge cases."""
+
+    def test_slugify_none(self):
+        assert slugify(None) == ""
+
+    def test_slugify_integer(self):
+        assert slugify(123) == "123"
+
+    def test_slugify_caching(self):
+        """Subsequent calls with same input should return cached result."""
+        result1 = slugify("Cache Test")
+        result2 = slugify("Cache Test")
+        assert result1 == result2 == "cache-test"
+

@@ -5,18 +5,23 @@ from unittest.mock import patch
 import pytest
 from jinja2 import Environment, FileSystemLoader
 
-from scripts.utils import TEMPLATES_DIR, slugify, truncate
+from scripts.utils import slugify, truncate
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
 @pytest.fixture
 def real_env():
     """Create Jinja2 env from the actual project templates."""
-    # Stabilize template path to the master project's templates
+    # Always use quickutils-master templates — other projects (price-comparator,
+    # market-digest) are standalone HTML/JS apps without Jinja2 templates.
     master_templates = ROOT_DIR / "projects" / "quickutils-master" / "src" / "templates"
     if not master_templates.exists():
-         # Fallback for different env structures
-         master_templates = ROOT_DIR / "src" / "templates"
+        # CI fallback: if running inside a distributed repo, try src/templates
+        master_templates = ROOT_DIR / "src" / "templates"
+    assert master_templates.exists(), (
+        f"Templates directory not found at {master_templates}. "
+        f"Template tests require quickutils-master/src/templates."
+    )
 
     env = Environment(
         loader=FileSystemLoader(str(master_templates)),

@@ -23,12 +23,69 @@ if CONFIG_PATH.exists():
     try:
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
             _CONFIG = json.load(f)
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"  ⚠️ Failed to load project_config.json: {exc}")
 
 if not isinstance(_CONFIG, dict):
     _CONFIG = {}
-PROJECT_TYPE = str(os.environ.get("PROJECT_TYPE", _CONFIG.get("PROJECT_TYPE", "master") if isinstance(_CONFIG, dict) else "master") or "master")
+
+
+def _detect_project_type() -> str:
+    """Auto-detect the PROJECT_TYPE from environment or current working directory.
+
+    Resolution order:
+    1. PROJECT_TYPE environment variable (explicit override)
+    2. CWD-based detection (if running inside a projects/* subdirectory)
+    3. PROJECT_ROOT-based detection (if PROJECT_ROOT itself is a project dir)
+    4. project_config.json fallback
+    5. Default: "master"
+    """
+    # 1. Explicit environment variable
+    env_val = os.environ.get("PROJECT_TYPE")
+    if env_val:
+        return str(env_val)
+
+    # 2. CWD-based detection — infer from current working directory
+    cwd = Path.cwd().resolve()
+    projects_dir = PROJECT_ROOT / "projects"
+    if projects_dir.exists():
+        try:
+            rel = cwd.relative_to(projects_dir)
+            top_dir = rel.parts[0] if rel.parts else None
+            if top_dir and (projects_dir / top_dir).is_dir():
+                return str(top_dir)
+        except ValueError:
+            pass
+
+    # 3. PROJECT_ROOT-based detection — if PROJECT_ROOT is itself a project
+    #    (e.g. when deployed individually, PROJECT_ROOT = the project dir)
+    root_name = PROJECT_ROOT.name
+    if root_name != "boring" and (PROJECT_ROOT / "data" / "database.json").exists():
+        return root_name
+
+    # 4. Config file fallback
+    cfg_val = _CONFIG.get("PROJECT_TYPE", "master") if isinstance(_CONFIG, dict) else "master"
+    return str(cfg_val or "master")
+
+
+PROJECT_TYPE = _detect_project_type()
+
+
+def get_project_database_path(project_name: str) -> Path:
+    """Get the absolute path to a specific project's database.json.
+
+    Args:
+        project_name: The project directory name (e.g. 'cheatsheets-directory').
+
+    Returns:
+        Path to the project's data/database.json.
+    """
+    projects_dir = PROJECT_ROOT / "projects"
+    project_dir = projects_dir / project_name
+    if not project_dir.exists():
+        # Try without -directory suffix
+        project_dir = projects_dir / f"{project_name}-directory"
+    return project_dir / "data" / "database.json"
 
 # Intelligent Path Resolution for Mono-repo structure
 # If we are in the root directory (boring) and a PROJECT_TYPE is specified (not master)
@@ -67,15 +124,34 @@ TEMPLATES_DIR = SRC_DIR / "templates"
 if not TEMPLATES_DIR.exists() and (SRC_DIR / "src" / "templates").exists():
     TEMPLATES_DIR = SRC_DIR / "src" / "templates"
 
+def _normalize_project_name(name: str) -> str:
+    """Normalize a project name by stripping the '-directory' suffix."""
+    return name.replace("-directory", "") if name.endswith("-directory") else name
+
+
 def get_config(key, default):
+    """Resolve a configuration value with cascading priority.
+
+    Resolution order:
+    1. Environment variable
+    2. Project-specific override in project_config.json
+    3. Root-level value in project_config.json
+    4. Default value
+    """
     # 1. Check environment variable
     val = os.environ.get(key)
     
     # 2. Check project-specific config overrides
     if val is None:
         projects_cfg = _CONFIG.get("projects", {})
-        # Try both the abbreviated name and the full directory name
-        project_overrides = projects_cfg.get(PROJECT_TYPE) or projects_cfg.get(f"{PROJECT_TYPE}-directory") or {}
+        # Try: full name, short name, and with -directory suffix
+        short_name = _normalize_project_name(PROJECT_TYPE)
+        project_overrides = (
+            projects_cfg.get(PROJECT_TYPE)
+            or projects_cfg.get(short_name)
+            or projects_cfg.get(f"{short_name}-directory")
+            or {}
+        )
         if key in project_overrides:
             val = project_overrides[key]
             
@@ -104,7 +180,7 @@ ENABLE_ADSENSE = get_config("ENABLE_ADSENSE", True)
 ENABLE_AMAZON = get_config("ENABLE_AMAZON", True)
 ENABLE_PINTEREST = get_config("ENABLE_PINTEREST", True)
 
-# Site Identity
+# Site Identity — maps normalized project names to human-readable type labels
 SITE_TYPE_MAP = {
     "apistatus": "Status Pages",
     "boilerplates": "Boilerplates",
@@ -117,14 +193,18 @@ SITE_TYPE_MAP = {
     "dailyfacts": "Daily Facts",
 }
 
-SITE_TYPE = SITE_TYPE_MAP.get(PROJECT_TYPE, "APIs")
+# Normalize PROJECT_TYPE for lookups (strip -directory suffix)
+_NORMALIZED_TYPE = _normalize_project_name(PROJECT_TYPE)
+SITE_TYPE = SITE_TYPE_MAP.get(_NORMALIZED_TYPE, SITE_TYPE_MAP.get(PROJECT_TYPE, "APIs"))
 
-if PROJECT_TYPE == "master" or PROJECT_TYPE == "directory" or PROJECT_TYPE == "boringwebsite":
+_MASTER_TYPES = {"master", "directory", "boringwebsite", "quickutils-master"}
+if _NORMALIZED_TYPE in _MASTER_TYPES or PROJECT_TYPE in _MASTER_TYPES:
     DEFAULT_SITE_URL = "https://quickutils.top"
     DEFAULT_SITE_NAME = "QuickUtils Directory"
     SITE_TYPE = "Directory"
 else:
-    DEFAULT_SITE_URL = f"https://{PROJECT_TYPE}.quickutils.top"
+    # Use the normalized (short) name for subdomain
+    DEFAULT_SITE_URL = f"https://{_NORMALIZED_TYPE}.quickutils.top"
     DEFAULT_SITE_NAME = f"QuickUtils {SITE_TYPE} Directory"
 
 SITE_URL = get_config("SITE_URL", DEFAULT_SITE_URL)
