@@ -32,7 +32,9 @@ PROJECT_TYPE = str(os.environ.get("PROJECT_TYPE", _CONFIG.get("PROJECT_TYPE", "m
 
 # Intelligent Path Resolution for Mono-repo structure
 # If we are in the root directory (boring) and a PROJECT_TYPE is specified (not master)
-if PROJECT_TYPE != "master" and not "projects" in str(PROJECT_ROOT):
+# GUARD: Only apply mono-repo logic when 'projects/' directory actually exists.
+# Individual repos deployed on Cloudflare do NOT have a projects/ subdirectory.
+if PROJECT_TYPE != "master" and "projects" not in str(PROJECT_ROOT) and (PROJECT_ROOT / "projects").exists():
     # Check if this project exists in the projects/ subdirectory
     project_sub_dir = PROJECT_ROOT / "projects" / PROJECT_TYPE
     # Support both 'name' and 'name-directory' folder naming
@@ -51,12 +53,12 @@ if PROJECT_TYPE != "master" and not "projects" in str(PROJECT_ROOT):
                 # Fallback if src is missing but templates exist directly
                 SRC_DIR = project_sub_dir
 
-# Final fallbacks for pure master builds
-if not DATA_DIR.exists():
+# Final fallbacks for pure master builds (only in mono-repo context)
+if not DATA_DIR.exists() and (PROJECT_ROOT / "projects").exists():
     if (PROJECT_ROOT / "projects" / "quickutils-master" / "data").exists():
         DATA_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "data"
 
-if not SRC_DIR.exists():
+if not SRC_DIR.exists() and (PROJECT_ROOT / "projects").exists():
     if (PROJECT_ROOT / "projects" / "quickutils-master" / "src").exists():
         SRC_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "src"
 
