@@ -7,12 +7,19 @@ from jinja2 import Environment, FileSystemLoader
 
 from scripts.utils import TEMPLATES_DIR, slugify, truncate
 
+ROOT_DIR = Path(__file__).resolve().parent.parent
 
 @pytest.fixture
 def real_env():
     """Create Jinja2 env from the actual project templates."""
+    # Stabilize template path to the master project's templates
+    master_templates = ROOT_DIR / "projects" / "quickutils-master" / "src" / "templates"
+    if not master_templates.exists():
+         # Fallback for different env structures
+         master_templates = ROOT_DIR / "src" / "templates"
+
     env = Environment(
-        loader=FileSystemLoader(str(TEMPLATES_DIR)),
+        loader=FileSystemLoader(str(master_templates)),
         autoescape=True,
         trim_blocks=True,
         lstrip_blocks=True,
