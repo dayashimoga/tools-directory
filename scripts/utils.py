@@ -34,13 +34,12 @@ def _detect_project_type() -> str:
     """Auto-detect the PROJECT_TYPE from environment or current working directory.
 
     Resolution order:
-    1. PROJECT_TYPE environment variable (explicit override)
+    1. PROJECT_TYPE environment variable (explicit override — set by Terraform/CI)
     2. CWD-based detection (if running inside a projects/* subdirectory)
     3. PROJECT_ROOT-based detection (if PROJECT_ROOT itself is a project dir)
-    4. project_config.json fallback
-    5. Default: "master"
+    4. Default: "quickutils-master"
     """
-    # 1. Explicit environment variable
+    # 1. Explicit environment variable (set by Terraform for Cloudflare Pages)
     env_val = os.environ.get("PROJECT_TYPE")
     if env_val:
         return str(env_val)
@@ -63,9 +62,8 @@ def _detect_project_type() -> str:
     if root_name != "boring" and (PROJECT_ROOT / "data" / "database.json").exists():
         return root_name
 
-    # 4. Config file fallback
-    cfg_val = _CONFIG.get("PROJECT_TYPE", "master") if isinstance(_CONFIG, dict) else "master"
-    return str(cfg_val or "master")
+    # 4. Default to quickutils-master (the main directory project)
+    return "quickutils-master"
 
 
 PROJECT_TYPE = _detect_project_type()
@@ -87,46 +85,54 @@ def get_project_database_path(project_name: str) -> Path:
         project_dir = projects_dir / f"{project_name}-directory"
     return project_dir / "data" / "database.json"
 
-# Intelligent Path Resolution for Mono-repo structure
-# If we are in the root directory (boring) and a PROJECT_TYPE is specified (not master)
-# GUARD: Only apply mono-repo logic when 'projects/' directory actually exists.
+
+def _normalize_project_name(name: str) -> str:
+    """Normalize a project name by stripping the '-directory' suffix."""
+    return name.replace("-directory", "") if name.endswith("-directory") else name
+
+
+# ── Intelligent Path Resolution for Mono-repo ───────────────────────────────
+# When running from the mono-repo root (h:/boring), resolve DATA_DIR and SRC_DIR
+# to the correct project subdirectory based on PROJECT_TYPE.
+#
+# GUARD: Only apply when 'projects/' directory actually exists.
 # Individual repos deployed on Cloudflare do NOT have a projects/ subdirectory.
-if PROJECT_TYPE != "master" and "projects" not in str(PROJECT_ROOT) and (PROJECT_ROOT / "projects").exists():
-    # Check if this project exists in the projects/ subdirectory
-    project_sub_dir = PROJECT_ROOT / "projects" / PROJECT_TYPE
-    # Support both 'name' and 'name-directory' folder naming
-    if not project_sub_dir.exists():
-        project_sub_dir = PROJECT_ROOT / "projects" / f"{PROJECT_TYPE}-directory"
-        
-    if project_sub_dir.exists():
-        # Override DATA_DIR and SRC_DIR if they point to root defaults and project overrides exist
-        if DATA_DIR == PROJECT_ROOT / "data" or not DATA_DIR.exists():
-            if (project_sub_dir / "data").exists():
-                DATA_DIR = project_sub_dir / "data"
-        if SRC_DIR == PROJECT_ROOT / "src" or not SRC_DIR.exists():
-            if (project_sub_dir / "src").exists():
-                SRC_DIR = project_sub_dir / "src"
-            elif (project_sub_dir / "templates").exists():
-                # Fallback if src is missing but templates exist directly
-                SRC_DIR = project_sub_dir
+_is_monorepo = (PROJECT_ROOT / "projects").exists() and "projects" not in str(PROJECT_ROOT)
 
-# Final fallbacks for pure master builds (only in mono-repo context)
-if not DATA_DIR.exists() and (PROJECT_ROOT / "projects").exists():
-    if (PROJECT_ROOT / "projects" / "quickutils-master" / "data").exists():
-        DATA_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "data"
+if _is_monorepo and not DATA_DIR.exists():
+    # DATA_DIR from env didn't resolve — try finding the project directory
+    _norm = _normalize_project_name(PROJECT_TYPE)
+    _candidates = [
+        PROJECT_ROOT / "projects" / PROJECT_TYPE,
+        PROJECT_ROOT / "projects" / f"{PROJECT_TYPE}-directory",
+        PROJECT_ROOT / "projects" / f"{_norm}-directory" if _norm != PROJECT_TYPE else None,
+    ]
+    for _candidate in filter(None, _candidates):
+        if (_candidate / "data").exists():
+            DATA_DIR = _candidate / "data"
+            break
 
-if not SRC_DIR.exists() and (PROJECT_ROOT / "projects").exists():
-    if (PROJECT_ROOT / "projects" / "quickutils-master" / "src").exists():
-        SRC_DIR = PROJECT_ROOT / "projects" / "quickutils-master" / "src"
+if _is_monorepo and not SRC_DIR.exists():
+    _candidates = [
+        PROJECT_ROOT / "projects" / PROJECT_TYPE,
+        PROJECT_ROOT / "projects" / f"{PROJECT_TYPE}-directory",
+    ]
+    for _candidate in filter(None, _candidates):
+        if (_candidate / "src").exists():
+            SRC_DIR = _candidate / "src"
+            break
+
+# Log warnings if paths still don't exist (makes debugging visible)
+if not DATA_DIR.exists():
+    print(f"  ⚠️  DATA_DIR does not exist: {DATA_DIR} (PROJECT_TYPE={PROJECT_TYPE})")
+if not SRC_DIR.exists():
+    print(f"  ⚠️  SRC_DIR does not exist: {SRC_DIR} (PROJECT_TYPE={PROJECT_TYPE})")
 
 DIST_DIR = Path(os.environ.get("DIST_DIR", PROJECT_ROOT / "dist"))
 TEMPLATES_DIR = SRC_DIR / "templates"
 if not TEMPLATES_DIR.exists() and (SRC_DIR / "src" / "templates").exists():
     TEMPLATES_DIR = SRC_DIR / "src" / "templates"
 
-def _normalize_project_name(name: str) -> str:
-    """Normalize a project name by stripping the '-directory' suffix."""
-    return name.replace("-directory", "") if name.endswith("-directory") else name
 
 
 def get_config(key, default):

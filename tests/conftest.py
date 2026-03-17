@@ -13,6 +13,11 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+# Set PROJECT_TYPE for tests — ensures utils.py resolves to quickutils-master
+# in all environments (local, CI, GitHub Actions) instead of detecting wrong project
+if "PROJECT_TYPE" not in os.environ:
+    os.environ["PROJECT_TYPE"] = "quickutils-master"
+
 
 @pytest.fixture
 def sample_items():
