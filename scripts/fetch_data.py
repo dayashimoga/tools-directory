@@ -131,8 +131,8 @@ def deduplicate(items: list) -> list:
 
 def fetch_and_save() -> bool:
     """Main entry point: fetch data, normalize, deduplicate, and save."""
-    from scripts.utils import get_config
-    project_type = get_config("PROJECT_TYPE", "master")
+    from scripts.utils import _NORMALIZED_TYPE
+    project_type = _NORMALIZED_TYPE
     
     print(f"📡 Fetching data for project type: {project_type}...")
 
