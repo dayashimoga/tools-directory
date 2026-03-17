@@ -161,13 +161,16 @@ def fetch_and_save() -> bool:
         raw_entries = fetch_from_alternative()
         if raw_entries:
             raw_entries = [e for e in raw_entries if e.get("Category", "").lower() in ["education", "utilities", "productivity"]]
-    else:
-        # Default/Master/Apistatus/Jobs/etc.
+    elif project_type in ["quickutils-master", "master", "directory", "boringwebsite"]:
         print("  → Fetching standard directory entries...")
         raw_entries = fetch_from_primary()
-    if not raw_entries:
-        print("  → Falling back to internal seed data...")
-        raw_entries = get_seed_data()
+        if not raw_entries:
+            print("  → Primary failed, trying alternative...")
+            raw_entries = fetch_from_alternative()
+    else:
+        # Apistatus, Jobs, Tools, Daily Facts, etc.
+        print(f"  → Project type '{project_type}' relies on static database.json.")
+        raw_entries = []
 
     if not raw_entries:
         # Preserve existing database.json if it has real data
@@ -175,11 +178,17 @@ def fetch_and_save() -> bool:
         if db_path.exists():
             try:
                 existing = json.loads(db_path.read_text(encoding="utf-8"))
-                if isinstance(existing, list) and len(existing) > 5:
-                    print(f"  → Remote fetch failed but existing database has {len(existing)} items. Keeping existing data.")
+                if isinstance(existing, list) and len(existing) > 0:
+                    print(f"  → Using existing database.json ({len(existing)} items). Skipping remote fetch.")
                     return True
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"  ⚠️ Error reading existing database.json: {e}")
+        
+        # Only use seed data if absolutely nothing else worked AND no existing DB
+        print("  → Falling back to internal seed data...")
+        raw_entries = get_seed_data()
+
+    if not raw_entries:
         print(f"  ✗ Failed to fetch data for {project_type}. Skipping update.")
         return False
 
