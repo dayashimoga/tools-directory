@@ -80,7 +80,7 @@
             "AMAZON_AFFILIATE_TAG": "promt-quickutils-21"
         },
         "quickutils-master": {
-            "SITE_NAME": "QuickUtils Master",
+            "SITE_NAME": "API Directory",
             "SITE_URL": "https://directory.quickutils.top/",
             "GA_MEASUREMENT_ID": "G-LKF615Z8NY",
             "AMAZON_AFFILIATE_TAG": "dir-quickutils-21"

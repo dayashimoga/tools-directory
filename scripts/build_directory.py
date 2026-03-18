@@ -558,6 +558,30 @@ def build_404_page(env: Environment):
     output_path.write_text(minify_html(html), encoding="utf-8")
     print("  ✓ Generated 404 page → dist/404.html")
 
+def build_legal_pages(env: Environment):
+    """Generate static legal and info pages."""
+    pages = [
+        {"file": "privacy.html", "title": f"Privacy Policy | {SITE_NAME}", "desc": "Privacy policy and terms of data usage."},
+        {"file": "terms.html", "title": f"Terms of Service | {SITE_NAME}", "desc": "Terms of service and usage guidelines."},
+        {"file": "about.html", "title": f"About Us | {SITE_NAME}", "desc": f"About {SITE_NAME}."}
+    ]
+    
+    for page in pages:
+        try:
+            template = env.get_template(page["file"])
+            html = template.render(
+                page_title=page["title"],
+                page_description=page["desc"],
+                page_url=f"{SITE_URL}/{page['file']}",
+                canonical_url=f"{SITE_URL}/{page['file']}",
+            )
+            output_path = DIST_DIR / page["file"]
+            output_path.write_text(minify_html(html), encoding="utf-8")
+        except Exception as e:
+            print(f"  ⚠️ Could not generate {page['file']}: {e}")
+            
+    print("  ✓ Generated legal pages → dist/")
+
 
 def build_site(database_path: Path = None):
     """Main build pipeline.
@@ -595,6 +619,7 @@ def build_site(database_path: Path = None):
     build_listicle_pages(env, categories)
     build_index_page(env, items, categories)
     build_404_page(env)
+    build_legal_pages(env)
 
     # Copy static assets
     copy_static_assets()

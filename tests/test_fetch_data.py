@@ -223,9 +223,34 @@ def test_existing_db_preserved_on_total_failure(tmp_path):
 
     with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
          patch("scripts.utils.DATA_DIR", tmp_path), \
+         patch("scripts.utils._NORMALIZED_TYPE", "master"), \
          patch("scripts.fetch_data.get_seed_data", return_value=[]):
         result = fetch_and_save()
     assert result is True  # Preserved existing
+    
+    # Assert it was genuinely preserved and not overwritten with empty
+    assert len(json.loads(db_path.read_text())) == 10
+
+@responses.activate
+def test_custom_project_preserves_static_db(tmp_path):
+    """Custom directories like 'cheatsheets' should preserve their data and not fallback to dummy APIs."""
+    responses.add(
+        responses.GET,
+        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
+        status=500,
+    )
+    # Create existing custom database
+    existing = [{"title": "Cheat 1", "description": "D", "slug": "cheat-1"}]
+    db_path = tmp_path / "database.json"
+    db_path.write_text(json.dumps(existing))
+
+    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
+         patch("scripts.utils.DATA_DIR", tmp_path), \
+         patch("scripts.utils._NORMALIZED_TYPE", "cheatsheets"):
+        result = fetch_and_save()
+    
+    assert result is True
+    assert len(json.loads(db_path.read_text())) == 1
 
 
 @responses.activate
@@ -238,7 +263,9 @@ def test_empty_normalized_results(tmp_path):
         status=200,
     )
     with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path):
+         patch("scripts.utils.DATA_DIR", tmp_path), \
+         patch("scripts.fetch_data.get_seed_data", return_value=[]), \
+         patch("scripts.utils._NORMALIZED_TYPE", "master"):
         result = fetch_and_save()
     assert result is False
 

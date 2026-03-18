@@ -134,12 +134,9 @@
                 <div class="footer-links" style="grid-column: span 1;">
                     <h4>Legal & Info</h4>
                     <ul>
-                        <li><a href="https://quickutils.top/privacy.html" target="_blank" rel="noopener">Privacy
-                                Policy</a></li>
-                        <li><a href="https://quickutils.top/terms.html" target="_blank" rel="noopener">Terms of Use</a>
-                        </li>
-                        <li><a href="https://quickutils.top/about.html" target="_blank" rel="noopener">Contact Us</a>
-                        </li>
+                        <li><a href="/privacy.html">Privacy Policy</a></li>
+                        <li><a href="/terms.html">Terms of Use</a></li>
+                        <li><a href="/about.html">Contact Us</a></li>
                     </ul>
                 </div>
 
@@ -292,6 +289,36 @@
             backToTop.addEventListener('click', () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
+            
+            // Cookie Consent Logic
+            if (!localStorage.getItem('cookieConsent')) {
+                const cookieBanner = document.createElement('div');
+                cookieBanner.id = 'cookie-consent';
+                Object.assign(cookieBanner.style, {
+                    position: 'fixed',
+                    bottom: '0',
+                    left: '0',
+                    right: '0',
+                    background: '#111',
+                    color: '#fff',
+                    padding: '15px',
+                    textAlign: 'center',
+                    zIndex: '10000',
+                    borderTop: '1px solid #333',
+                    fontSize: '14px'
+                });
+                cookieBanner.innerHTML = `
+                    This website uses cookies to ensure you get the best experience, including personalizing ads via Google AdSense. 
+                    <a href="/privacy.html" style="color: #6366f1; text-decoration: underline;">Learn more</a>
+                    <button id="accept-cookies" style="margin-left: 15px; padding: 5px 15px; background: #6366f1; border: none; color: white; border-radius: 4px; cursor: pointer;">Got it!</button>
+                `;
+                document.body.appendChild(cookieBanner);
+                
+                document.getElementById('accept-cookies').addEventListener('click', () => {
+                    localStorage.setItem('cookieConsent', 'true');
+                    cookieBanner.style.display = 'none';
+                });
+            }
         });
     </script>
 </body>
