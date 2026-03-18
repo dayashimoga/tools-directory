@@ -23,10 +23,10 @@
     <div class="hero-bg"></div>
     <div class="container hero-content">
         <h1 class="hero-title">
-            Discover <span class="gradient-text">Free &amp; Open APIs</span>
+            {{ hero_title | safe }}
         </h1>
         <p class="hero-subtitle">
-            Browse <strong>{{ total_apis }}+</strong> curated APIs across
+            Browse <strong>{{ total_apis }}+</strong> curated {{ resource_name }} across
             <strong>{{ total_categories }}</strong> categories.
             Always free. Always up-to-date.
         </p>

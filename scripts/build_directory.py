@@ -150,6 +150,39 @@ BOOK_RECOMMENDATIONS = {
     ],
 }
 
+# Dynamic Niche Titles for Index.html
+HERO_TITLES = {
+    "apistatus": "Track <span class='gradient-text'>API Status Pages</span>",
+    "boilerplates": "Launch Faster with <span class='gradient-text'>Open-Source Boilerplates</span>",
+    "cheatsheets": "Master Coding with <span class='gradient-text'>Dev Cheatsheets</span>",
+    "dailyfacts": "Learn Something New with <span class='gradient-text'>Daily Facts</span>",
+    "datasets": "Discover High-Quality <span class='gradient-text'>Open Datasets</span>",
+    "jobs": "Find the Best <span class='gradient-text'>Tech Jobs</span>",
+    "market": "Get the Latest <span class='gradient-text'>Market Digest</span>",
+    "opensource": "Explore the Best <span class='gradient-text'>Open Source Projects</span>",
+    "prices": "Compare <span class='gradient-text'>Software & Tech Prices</span>",
+    "prompts": "Optimize AI with <span class='gradient-text'>Prompt Templates</span>",
+    "master": "Discover <span class='gradient-text'>Free & Open APIs</span>",
+    "directory": "Discover <span class='gradient-text'>Free & Open APIs</span>",
+    "tools": "Boost Productivity with <span class='gradient-text'>Free Dev Tools</span>",
+}
+
+RESOURCE_NAMES = {
+    "apistatus": "API status pages",
+    "boilerplates": "boilerplates",
+    "cheatsheets": "cheatsheets",
+    "dailyfacts": "daily facts",
+    "datasets": "datasets",
+    "jobs": "job listings",
+    "market": "market updates",
+    "opensource": "open-source projects",
+    "prices": "pricing pages",
+    "prompts": "AI prompts",
+    "master": "APIs",
+    "directory": "APIs",
+    "tools": "developer tools",
+}
+
 # Default books for categories without specific recommendations
 DEFAULT_BOOKS = [
     {"title": "Designing Web APIs", "author": "Brenda Jin", "asin": "1492026921"},
@@ -524,6 +557,9 @@ def build_index_page(env: Environment, items: list, categories: dict):
     featured = items[:8]
 
     # Categories context
+    hero_title = HERO_TITLES.get(PROJECT_TYPE, "Discover <span class='gradient-text'>Free & Open APIs</span>")
+    resource_name = RESOURCE_NAMES.get(PROJECT_TYPE, "APIs")
+
     html = template.render(
         categories=category_cards,
         featured_items=featured,
@@ -533,6 +569,8 @@ def build_index_page(env: Environment, items: list, categories: dict):
         page_description=SITE_DESCRIPTION,
         page_url=SITE_URL,
         canonical_url=SITE_URL,
+        hero_title=hero_title,
+        resource_name=resource_name,
         # Social Presence Metadata
         og_image=f"{SITE_URL}/images/social/og-index.png",
         pinterest_image=f"{SITE_URL}/images/social/pin-index.png",
