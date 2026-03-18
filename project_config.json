@@ -2,7 +2,7 @@
     "GH_USERNAME": "dayashimoga",
     "GA_MEASUREMENT_ID": "G-QPDP38ZCCV",
     "ADSENSE_PUBLISHER_ID": "ca-pub-5193703345853377",
-    "AMAZON_AFFILIATE_TAG": "quickutils-21",
+    "AMAZON_AFFILIATE_TAG": "quickutils-20",
     "ENABLE_ADSENSE": true,
     "ENABLE_AMAZON": true,
     "ENABLE_PINTEREST": true,
@@ -15,31 +15,31 @@
             "SITE_NAME": "API Status Directory",
             "SITE_URL": "https://apistatus.quickutils.top",
             "GA_MEASUREMENT_ID": "G-Q7EZXMN9C8",
-            "AMAZON_AFFILIATE_TAG": "api-quickutils-21"
+            "AMAZON_AFFILIATE_TAG": "quickutils-20"
         },
         "boilerplates-directory": {
             "SITE_NAME": "Boilerplates Directory",
             "SITE_URL": "https://boilerplates.quickutils.top",
             "GA_MEASUREMENT_ID": "G-74FR35YMFW",
-            "AMAZON_AFFILIATE_TAG": "bp-quickutils-21"
+            "AMAZON_AFFILIATE_TAG": "quickutils-20"
         },
         "boringwebsite": {
             "SITE_NAME": "Boring Website",
             "SITE_URL": "https://quickutils.top",
             "GA_MEASUREMENT_ID": "G-QPDP38ZCCV",
-            "AMAZON_AFFILIATE_TAG": "quickutils-21"
+            "AMAZON_AFFILIATE_TAG": "quickutils-20"
         },
         "cheatsheets-directory": {
             "SITE_NAME": "Cheatsheets Directory",
             "SITE_URL": "https://cheatsheets.quickutils.top",
             "GA_MEASUREMENT_ID": "G-QW4WYBERHN",
-            "AMAZON_AFFILIATE_TAG": "cs-quickutils-21"
+            "AMAZON_AFFILIATE_TAG": "quickutils-20"
         },
         "dailyfacts": {
             "SITE_NAME": "Daily Facts",
             "SITE_URL": "https://facts.quickutils.top",
             "GA_MEASUREMENT_ID": "G-9PEGCBXCL7",
-            "AMAZON_AFFILIATE_TAG": "df-quickutils-21",
+            "AMAZON_AFFILIATE_TAG": "quickutils-20",
             "GOOGLE_SITE_VERIFICATION": "facts-google-token",
             "ENABLE_ADSENSE": true
         },
@@ -47,49 +47,49 @@
             "SITE_NAME": "Datasets Directory",
             "SITE_URL": "https://datasets.quickutils.top",
             "GA_MEASUREMENT_ID": "G-EJNZR5QRHF",
-            "AMAZON_AFFILIATE_TAG": "ds-quickutils-21"
+            "AMAZON_AFFILIATE_TAG": "quickutils-20"
         },
         "jobs-directory": {
             "SITE_NAME": "Jobs Directory",
             "SITE_URL": "https://jobs.quickutils.top",
             "GA_MEASUREMENT_ID": "G-WM7E5GMWTQ",
-            "AMAZON_AFFILIATE_TAG": "job-quickutils-21"
+            "AMAZON_AFFILIATE_TAG": "quickutils-20"
         },
         "market-digest": {
             "SITE_NAME": "Market Digest",
             "SITE_URL": "https://market.quickutils.top",
             "GA_MEASUREMENT_ID": "G-MARKET00001",
-            "AMAZON_AFFILIATE_TAG": "mkt-quickutils-21"
+            "AMAZON_AFFILIATE_TAG": "quickutils-20"
         },
         "opensource-directory": {
             "SITE_NAME": "Open Source Directory",
             "SITE_URL": "https://opensource.quickutils.top",
             "GA_MEASUREMENT_ID": "G-8YDN108HBT",
-            "AMAZON_AFFILIATE_TAG": "os-quickutils-21"
+            "AMAZON_AFFILIATE_TAG": "quickutils-20"
         },
         "price-comparator": {
             "SITE_NAME": "Price Comparator",
             "SITE_URL": "https://prices.quickutils.top",
             "GA_MEASUREMENT_ID": "G-PRICE000001",
-            "AMAZON_AFFILIATE_TAG": "price-quickutils-21"
+            "AMAZON_AFFILIATE_TAG": "quickutils-20"
         },
         "prompts-directory": {
             "SITE_NAME": "Prompts Directory",
             "SITE_URL": "https://prompts.quickutils.top",
             "GA_MEASUREMENT_ID": "G-D7JX9KJ29W",
-            "AMAZON_AFFILIATE_TAG": "promt-quickutils-21"
+            "AMAZON_AFFILIATE_TAG": "quickutils-20"
         },
         "quickutils-master": {
             "SITE_NAME": "API Directory",
             "SITE_URL": "https://directory.quickutils.top/",
             "GA_MEASUREMENT_ID": "G-LKF615Z8NY",
-            "AMAZON_AFFILIATE_TAG": "dir-quickutils-21"
+            "AMAZON_AFFILIATE_TAG": "quickutils-20"
         },
         "tools-directory": {
             "SITE_NAME": "Tools Directory",
             "SITE_URL": "https://tools.quickutils.top",
             "GA_MEASUREMENT_ID": "G-C6B3VLTZ21",
-            "AMAZON_AFFILIATE_TAG": "tool-quickutils-21"
+            "AMAZON_AFFILIATE_TAG": "quickutils-20"
         }
     }
 }
