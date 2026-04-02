@@ -38,8 +38,11 @@
         <h1 class="category-page-title">{{ category_name }} APIs</h1>
         <p class="category-page-desc">
             Browse <strong>{{ item_count }}</strong> free {{ category_name }} API{{ 's' if item_count != 1 }}
-            for your next project.
+            for your next project. 
         </p>
+        <div class="category-seo-text" style="color: var(--text-muted); font-size: 0.95rem; margin-top: 1rem; max-width: 800px;">
+            <p>Welcome to our comprehensive directory of {{ category_name }} tools and interfaces. Whether you are building a new application, automating a workflow, or just exploring the capabilities of {{ category_name | lower }} technologies, the resources listed below are designed to help you succeed. Each entry provides essential details including authentication requirements and HTTPS support.</p>
+        </div>
     </header>
 
     <div class="category-layout">
@@ -67,6 +70,11 @@
                     </div>
                     <p class="item-desc">{{ item.description | truncate_text }}</p>
                     <div class="item-meta">
+                        {% if item.status %}
+                        <span class="meta-badge {% if item.status == 'Up' %}badge-free{% else %}badge-warn{% endif %}">
+                            {{ '🟢 Up' if item.status == 'Up' else '🔴 Down' }}
+                        </span>
+                        {% endif %}
                         <span class="meta-badge {% if item.auth == 'None' %}badge-free{% else %}badge-auth{% endif %}">
                             {{ '🔓 No Auth' if item.auth == 'None' else '🔐 ' + item.auth }}
                         </span>

@@ -68,6 +68,12 @@
         crossorigin="anonymous"></script>
     {% endif %}
 
+    <!-- Cloudflare Web Analytics -->
+    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "MOCK_CF_TOKEN"}'></script>
+    
+    <!-- MiniSearch for Client-Side Search -->
+    <script src="https://cdn.jsdelivr.net/npm/minisearch@6.3.0/dist/umd/index.min.js"></script>
+
     {% block head_extra %}{% endblock %}
 </head>
 
@@ -84,9 +90,16 @@
             </a>
 
             <nav class="main-nav" id="main-nav" aria-label="Main navigation">
+                <!-- Search Box -->
+                <div class="search-container" style="position: relative; display: flex; align-items: center; margin-right: 1rem;">
+                    <input type="text" id="site-search" placeholder="Search..." autocomplete="off" aria-label="Search"
+                           style="padding: 0.5rem; border-radius: 4px; border: 1px solid #444; background: var(--bg-card); color: var(--text-base); width: 200px;">
+                    <div id="search-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid #444; border-top: none; z-index: 1000; max-height: 400px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3);"></div>
+                </div>
                 <a href="/" class="nav-link">Home</a>
                 <a href="/#categories" class="nav-link">Categories</a>
                 <a href="https://quickutils.top" class="nav-link" target="_blank" rel="noopener">QuickUtils</a>
+                <a href="https://ko-fi.com/dayatin" class="nav-link" target="_blank" rel="noopener" style="color: #ff5e5b; font-weight: 600;">☕ Support Us</a>
                 <a href="https://yourname.gumroad.com/l/submit" class="nav-link nav-cta" id="submit-tool-link">
                     Submit a Tool
                 </a>
@@ -128,6 +141,7 @@
                         <li><a href="/">Home</a></li>
                         <li><a href="/#categories">All Categories</a></li>
                         <li><a href="/sitemap.xml">Sitemap</a></li>
+                        <li><a href="https://ko-fi.com/dayatin" target="_blank" rel="noopener">☕ Support Our Work</a></li>
                     </ul>
                 </div>
 
@@ -249,6 +263,40 @@
         </div>
     </footer>
 
+    <!-- Submit Modal -->
+    <div id="submit-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10001; align-items: center; justify-content: center;">
+        <div style="background: var(--bg-card); padding: 2rem; border-radius: 8px; width: 90%; max-width: 500px; position: relative; color: var(--text-base);">
+            <button id="close-modal" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <h2 style="margin-top: 0">Submit a Resource</h2>
+            <form id="submit-form">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem;">Resource Name</label>
+                    <input type="text" name="name" required style="width: 100%; padding: 0.5rem; background: var(--bg-body); border: 1px solid #444; color: var(--text-base);">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem;">URL</label>
+                    <input type="url" name="url" required style="width: 100%; padding: 0.5rem; background: var(--bg-body); border: 1px solid #444; color: var(--text-base);">
+                </div>
+                <!-- Cloudflare Turnstile Mock -->
+                <div class="cf-turnstile" data-sitekey="1x00000000000000000000AA" style="margin-bottom: 1rem;"></div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">Submit for Review</button>
+                <div id="submit-message" style="margin-top: 1rem; color: #10b981; display: none;">Successfully submitted! We will review it shortly.</div>
+            </form>
+        </div>
+    </div>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+    <!-- Ko-fi Widget -->
+    <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+    <script>
+      kofiWidgetOverlay.draw('dayatin', {
+        'type': 'floating-chat',
+        'floating-chat.donateButton.text': 'Support Us',
+        'floating-chat.donateButton.background-color': '#ff5e5b',
+        'floating-chat.donateButton.text-color': '#fff'
+      });
+    </script>
+
     <script src="/js/main.js"></script>
     {% block scripts_extra %}{% endblock %}
     <script>
@@ -289,6 +337,81 @@
             backToTop.addEventListener('click', () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
+            
+            // Client-Side Search Logic
+            if (typeof MiniSearch !== 'undefined') {
+                const miniSearch = new MiniSearch({
+                    fields: ['title', 'description', 'category'],
+                    storeFields: ['title', 'description', 'category', 'url', 'slug'],
+                    searchOptions: { boost: { title: 2 }, prefix: true }
+                });
+                
+                fetch('/search.json')
+                    .then(res => res.json())
+                    .then(data => {
+                        data.forEach((d, i) => d.id = i);
+                        miniSearch.addAll(data);
+                    });
+                    
+                const searchInput = document.getElementById('site-search');
+                const searchResults = document.getElementById('search-results');
+                
+                if (searchInput && searchResults) {
+                    searchInput.addEventListener('input', (e) => {
+                        const query = e.target.value;
+                        if (query.length > 2) {
+                            const results = miniSearch.search(query);
+                            if (results.length > 0) {
+                                searchResults.style.display = 'block';
+                                searchResults.innerHTML = results.slice(0, 8).map(r => `
+                                    <a href="${r.url}" style="display: block; padding: 0.75rem; border-bottom: 1px solid #444; text-decoration: none; color: var(--text-base);">
+                                        <div style="font-weight: bold; color: var(--accent);">${r.title} <span style="font-size: 0.8em; color: var(--text-muted); float: right;">${r.category}</span></div>
+                                        <div style="font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.description}</div>
+                                    </a>
+                                `).join('');
+                            } else {
+                                searchResults.style.display = 'none';
+                            }
+                        } else {
+                            searchResults.style.display = 'none';
+                        }
+                    });
+                    
+                    document.addEventListener('click', (e) => {
+                        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                            searchResults.style.display = 'none';
+                        }
+                    });
+                }
+            }
+
+            // Submit Tool Modal Logic
+            const submitBtn = document.getElementById('submit-tool-link');
+            const submitModal = document.getElementById('submit-modal');
+            const closeModal = document.getElementById('close-modal');
+            const submitForm = document.getElementById('submit-form');
+            const submitMsg = document.getElementById('submit-message');
+
+            if (submitBtn && submitModal) {
+                submitBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    submitModal.style.display = 'flex';
+                });
+                closeModal.addEventListener('click', () => {
+                    submitModal.style.display = 'none';
+                });
+                submitForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    // Mock Worker Submission
+                    console.log("Mock Submission via CF Worker.");
+                    submitForm.reset();
+                    submitMsg.style.display = 'block';
+                    setTimeout(() => { 
+                        submitModal.style.display = 'none'; 
+                        submitMsg.style.display = 'none'; 
+                    }, 3000);
+                });
+            }
             
             // Cookie Consent Logic
             if (!localStorage.getItem('cookieConsent')) {

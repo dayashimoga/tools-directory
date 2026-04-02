@@ -3,9 +3,45 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 import sys
 import argparse
-from scripts.utils import PROJECT_ROOT
+import urllib.request
+from scripts.utils import PROJECT_ROOT, DATA_DIR, load_database, save_database
 
 DB_PATH = PROJECT_ROOT / "data" / "database.json"
+
+def check_database_urls():
+    print("🌍 Checking external API URLs for Up/Down status in database.json...")
+    items = load_database(DATA_DIR / "database.json")
+    if not items:
+        print("  ✗ No items to check.")
+        return
+        
+    changed = False
+    for item in items:
+        url = item.get("url")
+        if not url or url == "#" or not url.startswith("http"):
+            continue
+            
+        try:
+            req = urllib.request.Request(url, method='HEAD', headers={'User-Agent': 'Mozilla/5.0'})
+            urllib.request.urlopen(req, timeout=5)
+            new_status = "Up"
+        except Exception:
+            try:
+                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+                urllib.request.urlopen(req, timeout=5)
+                new_status = "Up"
+            except Exception:
+                new_status = "Down"
+            
+        if item.get("status") != new_status:
+            item["status"] = new_status
+            changed = True
+            
+    if changed:
+        save_database(items, DATA_DIR / "database.json")
+        print("  ✓ Database updated with latest Up/Down statuses.")
+    else:
+        print("  ✓ No status changes detected.")
 
 def check_links_in_dir(dist_dir: Path):
     print(f"🔍 Checking links in {dist_dir}...")
@@ -51,6 +87,8 @@ def main(args=None):
     parser.add_argument("--output-report", help="Path to output report")
     parsed_args = parser.parse_args(args)
 
+    check_database_urls()
+
     projects_dir = Path("projects")
     all_broken = {}
     
@@ -80,7 +118,7 @@ def main(args=None):
                         f.write(f"- In {fl}: broken {hr}\n")
 
     if all_broken:
-        print("\n❌ Broken links found:")
+        print("\n❌ Broken internal links found:")
         for proj, broken in all_broken.items():
             print(f"\n[{proj}]")
             for file, href in broken:
