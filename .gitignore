@@ -57,6 +57,8 @@ report.xml
 cov_report.json
 tmp_parse*.py
 temp_*/
+cov_out.txt
+utf8_cov.txt
 
 # OS and IDE
 .DS_Store

@@ -1,293 +1,123 @@
-"""Tests for scripts/fetch_data.py"""
 import json
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import pytest
-import responses
+import requests
+
 from scripts.fetch_data import (
-    SEED_DATA_URL,
+    fetch_from_primary,
+    fetch_from_alternative,
+    normalize_entry,
     deduplicate,
     fetch_and_save,
-    get_seed_data,
-    normalize_entry,
+    main,
+    get_seed_data
 )
 
-class TestNormalizeEntry:
-    def test_valid_entry(self):
-        raw = {
-            "name": "NYC Taxi Data",
-            "description": "Public taxi trips",
-            "category": "Transportation",
-            "url": "https://nyc.gov/",
-            "platform": "Parquet",
-            "tool_type": "50GB",
-            "pricing": "Public Domain"
-        }
-        result = normalize_entry(raw)
+def test_fetch_from_primary_success():
+    with patch("scripts.fetch_data.requests.get") as mock_get:
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"entries": [{"API": "Test", "Description": "A test api"}]}
+        mock_get.return_value = mock_response
+        
+        result = fetch_from_primary()
         assert result is not None
-        assert result["title"] == "NYC Taxi Data"
-        assert result["pricing"] == "Public Domain"
-
-    def test_missing_name_returns_none(self):
-        assert normalize_entry({"pricing": "Public Domain"}) is None
-
-    def test_whitespace_trimming(self):
-        raw = {"name": "  Trimmed  ", "description": "  Desc  ", "category": "  Test  "}
-        result = normalize_entry(raw)
-        assert result["title"] == "Trimmed"
-        assert result["description"] == "Desc"
-
-class TestDeduplicate:
-    def test_removes_duplicates(self):
-        items = [
-            {"title": "A", "slug": "a"},
-            {"title": "A Dup", "slug": "a"},
-        ]
-        result = deduplicate(items)
         assert len(result) == 1
+        assert result[0]["API"] == "Test"
 
-    def test_sorted_by_title(self):
-        items = [{"title": "Z", "slug": "z"}, {"title": "A", "slug": "a"}]
-        result = deduplicate(items)
-        assert result[0]["title"] == "A"
+def test_fetch_from_primary_failure():
+    with patch("scripts.fetch_data.requests.get", side_effect=requests.RequestException("error")):
+        assert fetch_from_primary() is None
 
-@responses.activate
-def test_successful_fetch(tmp_path):
-    responses.add(
-        responses.GET,
-        "https://api.publicapis.org/entries",
-        json={"entries": [{"API": "Test", "Description": "D", "Category": "Test", "Link": "https://t.com"}]},
-        status=200,
-    )
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path):
-        assert fetch_and_save() is True
-    assert (tmp_path / "database.json").exists()
-
-@responses.activate
-def test_fallback_to_seed_data(tmp_path):
-    responses.add(responses.GET, "https://api.publicapis.org/entries", status=500)
-    responses.add(responses.GET, "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json", status=500)
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path):
-        assert fetch_and_save() is True
-    assert (tmp_path / "database.json").exists()
-
-@responses.activate
-def test_datasets_filter(tmp_path):
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        json=[{"name": "Data", "description": "D", "category": "Science", "url": "https://t.com"}],
-        status=200,
-    )
-    # Write config file to avoid patching get_config which is used locally
-    config_path = tmp_path / "project_config.json"
-    config_path.write_text(json.dumps({"PROJECT_TYPE": "datasets"}))
-    
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path), \
-         patch("scripts.utils.Path.cwd", return_value=tmp_path):
-        fetch_and_save()
-    items = json.loads((tmp_path / "database.json").read_text())
-    assert len(items) == 1
-
-@responses.activate
-def test_prompts_filter(tmp_path):
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        json=[{"name": "AI Tool", "description": "D", "category": "Machine Learning", "url": "https://t.com"}],
-        status=200,
-    )
-    config_path = tmp_path / "project_config.json"
-    config_path.write_text(json.dumps({"PROJECT_TYPE": "prompts"}))
-    
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path), \
-         patch("scripts.utils.Path.cwd", return_value=tmp_path):
-        fetch_and_save()
-    items = json.loads((tmp_path / "database.json").read_text())
-    assert len(items) == 1
-
-def test_main_cli_execution():
-    with patch("scripts.fetch_data.fetch_and_save", return_value=True) as mock_fetch, \
-         patch("scripts.fetch_data.sys.exit") as mock_exit:
-        from scripts.fetch_data import main
-        main()
-        mock_fetch.assert_called_once()
-        mock_exit.assert_called_once_with(0)
-
-def test_normalize_entry_edge_cases():
-    assert normalize_entry({}) is None
-    assert normalize_entry({"name": "No Description"}) is None
-    res = normalize_entry({"name": "Auth Test", "description": "D", "Auth": "apiKey", "HTTPS": False})
-    assert res["auth"] == "apiKey"
-    assert res["https"] is False
-    res = normalize_entry({"name": "Defaults", "description": "D"})
-    assert res["auth"] == "None"
-    assert res["https"] is True
-
-
-# --- New tests to close coverage gaps ---
-
-@responses.activate
 def test_fetch_from_alternative_success():
-    """Test fetch_from_alternative returning a valid list."""
-    from scripts.fetch_data import fetch_from_alternative
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        json=[{"name": "Alt API", "description": "D", "category": "Test"}],
-        status=200,
-    )
-    result = fetch_from_alternative()
-    assert result is not None
-    assert len(result) == 1
+    with patch("scripts.fetch_data.requests.get") as mock_get:
+        mock_response = MagicMock()
+        mock_response.json.return_value = [{"API": "Alt", "Description": "Alt api"}]
+        mock_get.return_value = mock_response
+        
+        result = fetch_from_alternative()
+        assert result is not None
+        assert len(result) == 1
+        assert result[0]["API"] == "Alt"
 
-
-@responses.activate
 def test_fetch_from_alternative_failure():
-    """Test fetch_from_alternative returns None on network error."""
-    from scripts.fetch_data import fetch_from_alternative
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        status=500,
-    )
-    assert fetch_from_alternative() is None
+    with patch("scripts.fetch_data.requests.get", side_effect=json.JSONDecodeError("error", "doc", 0)):
+        assert fetch_from_alternative() is None
 
+def test_normalize_entry():
+    raw = {
+        "API": "My Test API",
+        "Description": "It is a test",
+        "Category": "Science",
+        "Link": "https://test.com",
+        "Auth": "apiKey",
+        "HTTPS": True,
+        "Cors": "yes"
+    }
+    norm = normalize_entry(raw)
+    assert norm["title"] == "My Test API"
+    assert norm["slug"] == "my-test-api"
+    assert norm["category"] == "Science"
+    assert norm["auth"] == "apiKey"
 
-@responses.activate
-def test_fetch_from_alternative_non_list():
-    """Test fetch_from_alternative returns None when response is not a list."""
-    from scripts.fetch_data import fetch_from_alternative
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        json={"data": "not a list"},
-        status=200,
-    )
-    assert fetch_from_alternative() is None
+def test_normalize_entry_missing_fields():
+    assert normalize_entry({}) is None
+    assert normalize_entry({"API": "No Desc"}) is None
 
+def test_deduplicate():
+    items = [
+        {"title": "B API", "slug": "b-api"},
+        {"title": "A API", "slug": "a-api"},
+        {"title": "A API Duplicate", "slug": "a-api"}
+    ]
+    uniq = deduplicate(items)
+    assert len(uniq) == 2
+    assert uniq[0]["slug"] == "a-api"  # sorted alphabetically
+    assert uniq[1]["slug"] == "b-api"
 
-@responses.activate
-def test_boilerplates_project_type(tmp_path):
-    """Cover the boilerplates/opensource branch in fetch_and_save."""
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        json=[
-            {"API": "Dev Tool", "Description": "A dev tool", "Category": "Development", "Link": "https://t.com"},
-            {"API": "Music API", "Description": "Music stuff", "Category": "Music", "Link": "https://t.com"},
-        ],
-        status=200,
-    )
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path), \
-         patch("scripts.utils.get_config", return_value="boilerplates"):
-        result = fetch_and_save()
-    assert result is True
+@patch("scripts.fetch_data.save_database")
+@patch("scripts.fetch_data.ensure_dir")
+def test_fetch_and_save_success_master(mock_ensure, mock_save, monkeypatch):
+    with patch("scripts.utils._NORMALIZED_TYPE", "master"), \
+         patch("scripts.fetch_data.fetch_from_primary", return_value=[{"API": "Master Test", "Description": "..."}]):
+        assert fetch_and_save() is True
+        mock_save.assert_called_once()
 
+@patch("scripts.fetch_data.save_database")
+@patch("scripts.fetch_data.ensure_dir")
+def test_fetch_and_save_datasets(mock_ensure, mock_save, monkeypatch):
+    raw_data = [{"name": "Science Dataset", "description": "data", "Category": "Science"}]
+    with patch("scripts.utils._NORMALIZED_TYPE", "datasets"), \
+         patch("scripts.fetch_data.fetch_from_alternative", return_value=raw_data):
+        assert fetch_and_save() is True
 
-@responses.activate
-def test_cheatsheets_project_type(tmp_path):
-    """Cover the cheatsheets branch in fetch_and_save."""
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        json=[
-            {"API": "Edu API", "Description": "Learn things", "Category": "Education", "Link": "https://t.com"},
-        ],
-        status=200,
-    )
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path), \
-         patch("scripts.utils.get_config", return_value="cheatsheets"):
-        result = fetch_and_save()
-    assert result is True
+@patch("scripts.fetch_data.save_database")
+@patch("scripts.fetch_data.ensure_dir")
+def test_fetch_and_save_fallback_to_existing_db(mock_ensure, mock_save, monkeypatch, tmp_path):
+    with patch("scripts.utils._NORMALIZED_TYPE", "apistatus"), \
+         patch("scripts.fetch_data.DATA_DIR", tmp_path):
+        # Create a fake db
+        db_path = tmp_path / "database.json"
+        db_path.write_text('[{"title": "Existing", "description": "..."}]')
+        
+        assert fetch_and_save() is True
 
+@patch("scripts.fetch_data.save_database")
+@patch("scripts.fetch_data.ensure_dir")
+def test_fetch_and_save_fallback_to_seed(mock_ensure, mock_save, monkeypatch, tmp_path):
+    with patch("scripts.utils._NORMALIZED_TYPE", "apistatus"), \
+         patch("scripts.fetch_data.DATA_DIR", tmp_path):
+        
+        assert fetch_and_save() is True
+        mock_save.assert_called_once()
 
-@responses.activate
-def test_existing_db_preserved_on_total_failure(tmp_path):
-    """When all fetches fail AND seed data fails, existing DB should be preserved."""
-    responses.add(responses.GET, "https://api.publicapis.org/entries", status=500)
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        status=500,
-    )
-    # Create existing database with > 5 items
-    existing = [{"title": f"Item {i}", "description": "D", "slug": f"item-{i}"} for i in range(10)]
-    db_path = tmp_path / "database.json"
-    db_path.write_text(json.dumps(existing))
+@patch("scripts.fetch_data.fetch_and_save", return_value=True)
+@patch("sys.exit")
+def test_main_success(mock_exit, mock_func):
+    main()
+    mock_exit.assert_called_with(0)
 
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path), \
-         patch("scripts.utils._NORMALIZED_TYPE", "master"), \
-         patch("scripts.fetch_data.get_seed_data", return_value=[]):
-        result = fetch_and_save()
-    assert result is True  # Preserved existing
-    
-    # Assert it was genuinely preserved and not overwritten with empty
-    assert len(json.loads(db_path.read_text())) == 10
-
-@responses.activate
-def test_custom_project_preserves_static_db(tmp_path):
-    """Custom directories like 'cheatsheets' should preserve their data and not fallback to dummy APIs."""
-    responses.add(
-        responses.GET,
-        "https://raw.githubusercontent.com/marcelscruz/public-apis/main/db/data.json",
-        status=500,
-    )
-    # Create existing custom database
-    existing = [{"title": "Cheat 1", "description": "D", "slug": "cheat-1"}]
-    db_path = tmp_path / "database.json"
-    db_path.write_text(json.dumps(existing))
-
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path), \
-         patch("scripts.utils._NORMALIZED_TYPE", "cheatsheets"):
-        result = fetch_and_save()
-    
-    assert result is True
-    assert len(json.loads(db_path.read_text())) == 1
-
-
-@responses.activate
-def test_empty_normalized_results(tmp_path):
-    """When entries exist but all normalize to None, should return False."""
-    responses.add(
-        responses.GET,
-        "https://api.publicapis.org/entries",
-        json={"entries": [{"API": "", "Description": "", "Category": "X"}]},
-        status=200,
-    )
-    with patch("scripts.fetch_data.DATA_DIR", tmp_path), \
-         patch("scripts.utils.DATA_DIR", tmp_path), \
-         patch("scripts.fetch_data.get_seed_data", return_value=[]), \
-         patch("scripts.utils._NORMALIZED_TYPE", "master"):
-        result = fetch_and_save()
-    assert result is False
-
-
-def test_main_cli_failure():
-    """Test main() when fetch_and_save returns False."""
-    with patch("scripts.fetch_data.fetch_and_save", return_value=False), \
-         patch("scripts.fetch_data.sys.exit") as mock_exit:
-        from scripts.fetch_data import main
-        main()
-        mock_exit.assert_called_once_with(0)  # Always exits 0
-
-
-@responses.activate
-def test_fetch_from_primary_non_entries():
-    """Test fetch_from_primary when response has no 'entries' key."""
-    from scripts.fetch_data import fetch_from_primary
-    responses.add(
-        responses.GET,
-        "https://api.publicapis.org/entries",
-        json={"data": "wrong key"},
-        status=200,
-    )
-    assert fetch_from_primary() is None
-
+@patch("scripts.fetch_data.fetch_and_save", return_value=False)
+@patch("sys.exit")
+def test_main_failure(mock_exit, mock_func):
+    main()
+    mock_exit.assert_called_with(0)

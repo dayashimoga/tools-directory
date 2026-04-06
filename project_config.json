@@ -3,6 +3,7 @@
     "GA_MEASUREMENT_ID": "G-QPDP38ZCCV",
     "ADSENSE_PUBLISHER_ID": "ca-pub-5193703345853377",
     "AMAZON_AFFILIATE_TAG": "quickutils-20",
+    "KOFI_USERNAME": "dayatin",
     "ENABLE_ADSENSE": true,
     "ENABLE_AMAZON": true,
     "ENABLE_PINTEREST": true,
@@ -90,6 +91,56 @@
             "SITE_URL": "https://tools.quickutils.top",
             "GA_MEASUREMENT_ID": "G-C6B3VLTZ21",
             "AMAZON_AFFILIATE_TAG": "quickutils-20"
+        },
+        "typing-test": {
+            "SITE_NAME": "Typing Speed Test",
+            "SITE_URL": "https://typing.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-TYPING00001"
+        },
+        "regex-playground": {
+            "SITE_NAME": "Regex Playground",
+            "SITE_URL": "https://regex.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-REGEX000001"
+        },
+        "pomodoro-timer": {
+            "SITE_NAME": "Pomodoro Focus Timer",
+            "SITE_URL": "https://focus.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-FOCUS000001"
+        },
+        "data-converter": {
+            "SITE_NAME": "Data Converter",
+            "SITE_URL": "https://convert.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-CONVERT0001"
+        },
+        "budget-tracker": {
+            "SITE_NAME": "Budget Tracker",
+            "SITE_URL": "https://budget.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-BUDGET00001"
+        },
+        "habit-tracker": {
+            "SITE_NAME": "Habit Tracker",
+            "SITE_URL": "https://habits.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-HABITS00001"
+        },
+        "gradient-studio": {
+            "SITE_NAME": "CSS Gradient Studio",
+            "SITE_URL": "https://gradients.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-GRADIENT001"
+        },
+        "ambient-mixer": {
+            "SITE_NAME": "Ambient Sound Mixer",
+            "SITE_URL": "https://ambient.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-AMBIENT0001"
+        },
+        "periodic-table": {
+            "SITE_NAME": "Interactive Periodic Table",
+            "SITE_URL": "https://elements.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-ELEMENT0001"
+        },
+        "pixel-art": {
+            "SITE_NAME": "Pixel Art Editor",
+            "SITE_URL": "https://pixelart.quickutils.top",
+            "GA_MEASUREMENT_ID": "G-PIXELART001"
         }
     }
 }
