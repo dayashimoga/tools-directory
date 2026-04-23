@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools Directory | QuickUtils</title>
+    <meta name="description" content="Curated collection of developer tools and utilities">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://tools.quickutils.top/">
+    <meta property="og:title" content="Tools Directory | QuickUtils">
+    <meta property="og:description" content="Curated collection of developer tools and utilities">
+    <meta property="og:type" content="website">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="quickutils-core.css">
+    <style>
+        :root {
+            --bg: #0a0a0f; --bg-card: rgba(18,18,30,0.85); --text: #e8e8f0;
+            --text-muted: #888; --accent: #6366f1; --border: rgba(255,255,255,0.08);
+            --radius: 12px;
+        }
+        [data-theme="light"] {
+            --bg: #f5f5fa; --bg-card: rgba(255,255,255,0.9); --text: #1a1a2e;
+            --text-muted: #666; --border: rgba(0,0,0,0.08);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; padding:0 1.5rem; }
+        .navbar { background:rgba(10,10,15,0.8); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0.75rem 0; position:sticky; top:0; z-index:100; }
+        .nav-inner { display:flex; align-items:center; justify-content:space-between; }
+        .brand { text-decoration:none; color:var(--text); font-weight:700; font-size:1.25rem; }
+        .hero { text-align:center; padding:2.5rem 0 1.5rem; }
+        .hero h1 { font-size:clamp(1.8rem,4vw,2.5rem); font-weight:800; margin-bottom:0.5rem; }
+        .hero p { color:var(--text-muted); max-width:500px; margin:0 auto; }
+        .gradient-text { background:linear-gradient(135deg,#6366f1,#a855f7,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .controls { display:flex; gap:1rem; margin:1.5rem 0; flex-wrap:wrap; align-items:center; }
+        .controls input, .controls select { padding:0.6rem 1rem; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:0.9rem; outline:none; }
+        .controls input { flex:1; min-width:200px; }
+        .controls input:focus, .controls select:focus { border-color:var(--accent); }
+        .count-badge { padding:0.4rem 1rem; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); border-radius:20px; font-size:0.85rem; color:var(--accent); font-weight:600; }
+        .dir-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; margin:1.5rem 0 3rem; }
+        .dir-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.25rem; transition:all 0.3s; }
+        .dir-card:hover { border-color:var(--accent); transform:translateY(-3px); box-shadow:0 8px 24px rgba(99,102,241,0.15); }
+        .card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; margin-bottom:0.5rem; }
+        .card-top h3 { font-size:1rem; font-weight:600; }
+        .card-top a { color:var(--text); text-decoration:none; }
+        .card-top a:hover { color:var(--accent); }
+        .card-category { font-size:0.7rem; padding:2px 8px; border-radius:12px; background:rgba(99,102,241,0.1); color:var(--accent); white-space:nowrap; }
+        .card-desc { font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:0.5rem; }
+        .card-badges { display:flex; gap:0.3rem; flex-wrap:wrap; }
+        .badge { padding:2px 8px; border-radius:10px; font-size:0.65rem; font-weight:600; }
+        .badge-green { background:rgba(16,185,129,0.15); color:#10b981; }
+        .badge-yellow { background:rgba(245,158,11,0.15); color:#f59e0b; }
+        .footer { border-top:1px solid var(--border); padding:2rem 0; text-align:center; color:var(--text-muted); font-size:0.85rem; }
+        .footer a { color:var(--accent); text-decoration:none; }
+        .empty-state { text-align:center; padding:3rem; color:var(--text-muted); }
+    </style>
+</head>
+<body>
+<nav class="navbar"><div class="container nav-inner">
+    <a href="/" class="brand">🛠️ Tools Directory</a>
+    <a href="https://quickutils.top" style="color:var(--text-muted);text-decoration:none;font-size:0.9rem;">QuickUtils ↗</a>
+</div></nav>
+
+<main class="container">
+    <section class="hero">
+        <h1>🛠️ <span class="gradient-text">Tools Directory</span></h1>
+        <p>Curated collection of developer tools and utilities</p>
+    </section>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Search 51 entries..." oninput="filterCards()">
+        <select id="categoryFilter" onchange="filterCards()">
+            <option value="">All Categories</option>
+            <option value="API">API</option>
+            <option value="Assets">Assets</option>
+            <option value="Communication">Communication</option>
+            <option value="Community">Community</option>
+            <option value="Data">Data</option>
+            <option value="Design">Design</option>
+            <option value="Dev Tools">Dev Tools</option>
+            <option value="Education">Education</option>
+            <option value="Fintech">Fintech</option>
+            <option value="Frontend">Frontend</option>
+            <option value="Hosting">Hosting</option>
+            <option value="Network">Network</option>
+            <option value="Performance">Performance</option>
+            <option value="Productivity">Productivity</option>
+            <option value="Security">Security</option>
+            <option value="Uncategorized">Uncategorized</option>
+        </select>
+        <span class="count-badge" id="countBadge">51 items</span>
+    </div>
+
+    <div class="dir-grid" id="dirGrid">
+
+        <div class="dir-card" data-category="Uncategorized">
+            <div class="card-top">
+                <h3><a href="#" target="_blank" rel="noopener">Tool 1</a></h3>
+                <span class="card-category">Uncategorized</span>
+            </div>
+            <p class="card-desc">No description provided.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Network">
+            <div class="card-top">
+                <h3><a href="https://mxtoolbox.com/" target="_blank" rel="noopener">MXToolbox</a></h3>
+                <span class="card-category">Network</span>
+            </div>
+            <p class="card-desc">Network diagnostic and lookup tools for DNS, email, and IP.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Dev Tools">
+            <div class="card-top">
+                <h3><a href="https://jsonformatter.curiousconcept.com/" target="_blank" rel="noopener">JSON Formatter</a></h3>
+                <span class="card-category">Dev Tools</span>
+            </div>
+            <p class="card-desc">Browser-based tool to format, validate, and beautify JSON data.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Frontend">
+            <div class="card-top">
+                <h3><a href="https://caniuse.com/" target="_blank" rel="noopener">Can I Use</a></h3>
+                <span class="card-category">Frontend</span>
+            </div>
+            <p class="card-desc">Browser support tables for modern web technologies (HTML5, CSS3, etc.).</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Dev Tools">
+            <div class="card-top">
+                <h3><a href="https://regex101.com/" target="_blank" rel="noopener">Regex101</a></h3>
+                <span class="card-category">Dev Tools</span>
+            </div>
+            <p class="card-desc">Online regular expression tester and debugger for PHP, JS, Python, and more.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://tinypng.com/" target="_blank" rel="noopener">TinyPNG</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Smart PNG and JPEG compression to reduce image file sizes.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Network">
+            <div class="card-top">
+                <h3><a href="https://speed.cloudflare.com/" target="_blank" rel="noopener">Cloudflare Speed Test</a></h3>
+                <span class="card-category">Network</span>
+            </div>
+            <p class="card-desc">Check your internet connection quality and latency.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Network">
+            <div class="card-top">
+                <h3><a href="https://dnschecker.org/" target="_blank" rel="noopener">DNS Checker</a></h3>
+                <span class="card-category">Network</span>
+            </div>
+            <p class="card-desc">Free online tools to check DNS propagation on multiple servers globally.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Dev Tools">
+            <div class="card-top">
+                <h3><a href="https://www.wappalyzer.com/" target="_blank" rel="noopener">Wappalyzer</a></h3>
+                <span class="card-category">Dev Tools</span>
+            </div>
+            <p class="card-desc">Identify the technology stack used by any website.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="API">
+            <div class="card-top">
+                <h3><a href="https://www.postman.com/" target="_blank" rel="noopener">Postman</a></h3>
+                <span class="card-category">API</span>
+            </div>
+            <p class="card-desc">Collaborative platform for building, testing, and documentation of APIs.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Security">
+            <div class="card-top">
+                <h3><a href="https://gchq.github.io/CyberChef/" target="_blank" rel="noopener">CyberChef</a></h3>
+                <span class="card-category">Security</span>
+            </div>
+            <p class="card-desc">The Swiss Army Knife for encoding, decoding, and data processing.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Security">
+            <div class="card-top">
+                <h3><a href="https://jwt.io/" target="_blank" rel="noopener">JWT.io</a></h3>
+                <span class="card-category">Security</span>
+            </div>
+            <p class="card-desc">JSON Web Token debugger to decode, verify, and generate JWTs.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://squoosh.app/" target="_blank" rel="noopener">Squoosh</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Google's image compression tool for the browser.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Frontend">
+            <div class="card-top">
+                <h3><a href="https://www.responsivedesignchecker.com/" target="_blank" rel="noopener">Responsive Design Checker</a></h3>
+                <span class="card-category">Frontend</span>
+            </div>
+            <p class="card-desc">Test your website responsiveness on various screen sizes.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Performance">
+            <div class="card-top">
+                <h3><a href="https://gtmetrix.com/" target="_blank" rel="noopener">GTmetrix</a></h3>
+                <span class="card-category">Performance</span>
+            </div>
+            <p class="card-desc">Website performance reports for PageSpeed and Core Web Vitals.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Performance">
+            <div class="card-top">
+                <h3><a href="https://pagespeed.web.dev/" target="_blank" rel="noopener">PageSpeed Insights</a></h3>
+                <span class="card-category">Performance</span>
+            </div>
+            <p class="card-desc">Analyze the speed and performance of web pages on all devices.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Dev Tools">
+            <div class="card-top">
+                <h3><a href="https://builtwith.com/" target="_blank" rel="noopener">BuiltWith</a></h3>
+                <span class="card-category">Dev Tools</span>
+            </div>
+            <p class="card-desc">Find out what websites are built with and their tech trends.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://coolors.co/" target="_blank" rel="noopener">Coolors</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Fast and beautiful color palette generator for designers.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://fontawesome.com/" target="_blank" rel="noopener">Font Awesome</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">World's most popular icon set and toolkit for web projects.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Assets">
+            <div class="card-top">
+                <h3><a href="https://unsplash.com/" target="_blank" rel="noopener">Unsplash</a></h3>
+                <span class="card-category">Assets</span>
+            </div>
+            <p class="card-desc">Beautiful, free images and photos that you can download and use.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Assets">
+            <div class="card-top">
+                <h3><a href="https://pixabay.com/" target="_blank" rel="noopener">Pixabay</a></h3>
+                <span class="card-category">Assets</span>
+            </div>
+            <p class="card-desc">Stunning free stock images, videos, and music for any project.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Dev Tools">
+            <div class="card-top">
+                <h3><a href="https://lipsum.com/" target="_blank" rel="noopener">Lorem Ipsum Generator</a></h3>
+                <span class="card-category">Dev Tools</span>
+            </div>
+            <p class="card-desc">Quickly generate placeholder text for layouts and mocks.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://realfavicongenerator.net/" target="_blank" rel="noopener">Favicon Generator</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Generate favicons for browsers, iOS, and Android platforms.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Data">
+            <div class="card-top">
+                <h3><a href="https://www.base64decode.org/" target="_blank" rel="noopener">Base64 Decode</a></h3>
+                <span class="card-category">Data</span>
+            </div>
+            <p class="card-desc">Simple tool to encode and decode Base64 strings.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Data">
+            <div class="card-top">
+                <h3><a href="https://www.urlencoder.org/" target="_blank" rel="noopener">URL Encoder</a></h3>
+                <span class="card-category">Data</span>
+            </div>
+            <p class="card-desc">Format strings for safe inclusion in URLs.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Dev Tools">
+            <div class="card-top">
+                <h3><a href="https://www.diffchecker.com/" target="_blank" rel="noopener">Diffchecker</a></h3>
+                <span class="card-category">Dev Tools</span>
+            </div>
+            <p class="card-desc">Online tool to compare two files or blocks of text.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Network">
+            <div class="card-top">
+                <h3><a href="https://www.whatismyip.com/" target="_blank" rel="noopener">WhatIsMyIP</a></h3>
+                <span class="card-category">Network</span>
+            </div>
+            <p class="card-desc">Check your public IP address and ISP information.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Security">
+            <div class="card-top">
+                <h3><a href="https://www.sslshopper.com/ssl-checker.html" target="_blank" rel="noopener">SSL Shopper Checker</a></h3>
+                <span class="card-category">Security</span>
+            </div>
+            <p class="card-desc">Check if your SSL certificate is installed correctly.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Network">
+            <div class="card-top">
+                <h3><a href="https://www.whois.com/whois/" target="_blank" rel="noopener">Whois Lookup</a></h3>
+                <span class="card-category">Network</span>
+            </div>
+            <p class="card-desc">Check domain ownership, registration, and DNS records.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Performance">
+            <div class="card-top">
+                <h3><a href="https://tools.pingdom.com/" target="_blank" rel="noopener">Pingdom Speed Test</a></h3>
+                <span class="card-category">Performance</span>
+            </div>
+            <p class="card-desc">Test the load time of a web page and analyze bottlenecks.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Dev Tools">
+            <div class="card-top">
+                <h3><a href="https://carbon.now.sh/" target="_blank" rel="noopener">Carbon</a></h3>
+                <span class="card-category">Dev Tools</span>
+            </div>
+            <p class="card-desc">Create and share beautiful images of your source code.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://excalidraw.com/" target="_blank" rel="noopener">Excalidraw</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Virtual whiteboard for sketching hand-drawn like diagrams.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Design">
+            <div class="card-top">
+                <h3><a href="https://app.diagrams.net/" target="_blank" rel="noopener">Diagrams.net</a></h3>
+                <span class="card-category">Design</span>
+            </div>
+            <p class="card-desc">Professional free online diagram software and flowcharts.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Dev Tools">
+            <div class="card-top">
+                <h3><a href="https://mermaid.live/" target="_blank" rel="noopener">Mermaid Live Editor</a></h3>
+                <span class="card-category">Dev Tools</span>
+            </div>
+            <p class="card-desc">Turn markdown-like text into complex diagrams and charts.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Education">
+            <div class="card-top">
+                <h3><a href="https://devhints.io/" target="_blank" rel="noopener">DevHints</a></h3>
+                <span class="card-category">Education</span>
+            </div>
+            <p class="card-desc">A collection of cheatsheets for various tech stacks.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Education">
+            <div class="card-top">
+                <h3><a href="https://devdocs.io/" target="_blank" rel="noopener">DevDocs</a></h3>
+                <span class="card-category">Education</span>
+            </div>
+            <p class="card-desc">Combines multiple API documentations in a fast, searchable UI.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Education">
+            <div class="card-top">
+                <h3><a href="https://developer.mozilla.org/" target="_blank" rel="noopener">MDN Web Docs</a></h3>
+                <span class="card-category">Education</span>
+            </div>
+            <p class="card-desc">Mozilla's authoritative resource for web developers.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Community">
+            <div class="card-top">
+                <h3><a href="https://stackoverflow.com/" target="_blank" rel="noopener">Stack Overflow</a></h3>
+                <span class="card-category">Community</span>
+            </div>
+            <p class="card-desc">The largest community for developers to learn and share.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Productivity">
+            <div class="card-top">
+                <h3><a href="https://github.com/" target="_blank" rel="noopener">GitHub</a></h3>
+                <span class="card-category">Productivity</span>
+            </div>
+            <p class="card-desc">Pioneer platform for code hosting and open source collaboration.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Productivity">
+            <div class="card-top">
+                <h3><a href="https://bitbucket.org/" target="_blank" rel="noopener">Bitbucket</a></h3>
+                <span class="card-category">Productivity</span>
+            </div>
+            <p class="card-desc">Git repository management solution for teams.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Productivity">
+            <div class="card-top">
+                <h3><a href="https://about.gitlab.com/" target="_blank" rel="noopener">GitLab</a></h3>
+                <span class="card-category">Productivity</span>
+            </div>
+            <p class="card-desc">Open source DevOps platform for the entire lifecycle.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Hosting">
+            <div class="card-top">
+                <h3><a href="https://www.netlify.com/" target="_blank" rel="noopener">Netlify</a></h3>
+                <span class="card-category">Hosting</span>
+            </div>
+            <p class="card-desc">Workflow for building and deploying modern web projects.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Hosting">
+            <div class="card-top">
+                <h3><a href="https://vercel.com/" target="_blank" rel="noopener">Vercel</a></h3>
+                <span class="card-category">Hosting</span>
+            </div>
+            <p class="card-desc">Platform for frontend developers to host sites and APIs.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Hosting">
+            <div class="card-top">
+                <h3><a href="https://www.heroku.com/" target="_blank" rel="noopener">Heroku</a></h3>
+                <span class="card-category">Hosting</span>
+            </div>
+            <p class="card-desc">Cloud platform that lets companies build and run apps.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Hosting">
+            <div class="card-top">
+                <h3><a href="https://www.digitalocean.com/" target="_blank" rel="noopener">DigitalOcean</a></h3>
+                <span class="card-category">Hosting</span>
+            </div>
+            <p class="card-desc">Simplifying cloud computing so builders can spend more time on software.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Hosting">
+            <div class="card-top">
+                <h3><a href="https://www.linode.com/" target="_blank" rel="noopener">Akamai (Linode)</a></h3>
+                <span class="card-category">Hosting</span>
+            </div>
+            <p class="card-desc">Cloud computing and website hosting services.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Fintech">
+            <div class="card-top">
+                <h3><a href="https://stripe.com/" target="_blank" rel="noopener">Stripe</a></h3>
+                <span class="card-category">Fintech</span>
+            </div>
+            <p class="card-desc">Financial infrastructure for the internet.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Productivity">
+            <div class="card-top">
+                <h3><a href="https://trello.com/" target="_blank" rel="noopener">Trello</a></h3>
+                <span class="card-category">Productivity</span>
+            </div>
+            <p class="card-desc">Visualize your projects with boards, lists, and cards.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Productivity">
+            <div class="card-top">
+                <h3><a href="https://slack.com/" target="_blank" rel="noopener">Slack</a></h3>
+                <span class="card-category">Productivity</span>
+            </div>
+            <p class="card-desc">A new way to communicate with your team.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Communication">
+            <div class="card-top">
+                <h3><a href="https://discord.com/" target="_blank" rel="noopener">Discord</a></h3>
+                <span class="card-category">Communication</span>
+            </div>
+            <p class="card-desc">Talk, chat, and hang out with your communities.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+        <div class="dir-card" data-category="Productivity">
+            <div class="card-top">
+                <h3><a href="https://www.notion.so/" target="_blank" rel="noopener">Notion</a></h3>
+                <span class="card-category">Productivity</span>
+            </div>
+            <p class="card-desc">Write, plan, and get organized in one workspace.</p>
+            <div class="card-badges"><span class="badge badge-green">HTTPS</span></div>
+        </div>
+    </div>
+</main>
+
+<footer class="footer"><div class="container">
+    <p>Part of <a href="https://quickutils.top">QuickUtils</a> — 90+ free web tools</p>
+</div></footer>
+
+<script>
+function filterCards() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const cat = document.getElementById('categoryFilter').value;
+    let visible = 0;
+    document.querySelectorAll('.dir-card').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const cardCat = card.dataset.category;
+        const show = text.includes(q) && (cat === '' || cardCat === cat);
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    document.getElementById('countBadge').textContent = visible + ' items';
+}
+</script>
+</body>
+</html>
